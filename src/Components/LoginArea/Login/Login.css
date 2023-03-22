@@ -1,13 +1,10 @@
 .Login {
     height: 100%;
-    box-sizing: border-box;
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
     background-image: url("background.jpg");
 }
 
 .Logo {
-    height: 100%;
-    background-color: black;
-    border: 1px solid black;
+    width: 200px;
+    padding: 110px;
+    margin-bottom: 0px;
 }
