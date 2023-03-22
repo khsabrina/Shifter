@@ -6,10 +6,16 @@ import ProioritiserIcon from '@mui/icons-material/EventAvailableSharp';
 import TeamIcon from '@mui/icons-material/Groups2Sharp';
 import SettingsIcon from '@mui/icons-material/SettingsSharp';
 import LogoutIcon from '@mui/icons-material/LogoutSharp';
+import Logo from '../Logo/Logo'
 
 function SideBar(): JSX.Element {
     return (
-        <div className="Menu">
+        <div className="SideBar">
+            <div style={{marginTop: '10px' , display:'flex',marginLeft: '7px'}}>
+                <div>
+                    <Logo/>
+                </div>
+            </div>
             <div style={{marginTop: '10px' , display:'flex',marginLeft: '7px'}}>
                 <div style={{display:'flex', alignItems:'center'}}>
                     <HouseIcon/>
@@ -40,20 +46,6 @@ function SideBar(): JSX.Element {
                     <h6>Logout</h6>
                 </div>
             </div>
-            
-            			
-            {/* <a href="#" > <HouseIcon/> Home</a>
-
-            <div style={margin-top: 20px}>
-                <CalendarIcon/>
-            </div>
-
-			<a href="#"><CalendarIcon/>Calendar</a>
-			<a href="#"><ProioritiserIcon/> Proioritiser</a>
-            <a href="#"><TeamIcon/> Team</a>
-			<a href="#"><LogoutIcon/> Logout</a> */}
-
-
         </div>
     );
 }
