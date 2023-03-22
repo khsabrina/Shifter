@@ -1,12 +1,12 @@
 import React from 'react';
 import logo from './logo.svg';
 import './App.css';
-import SideBar from '../src/Components/SideBar/SideBar'
+import Layout from './Components/LayoutArea/Layout/Layout';
 
 function App() {
   return (
     <div className="App">
-      <SideBar />
+      <Layout />
     </div>
   );
 }
