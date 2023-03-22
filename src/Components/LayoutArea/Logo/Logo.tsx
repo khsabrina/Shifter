@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom'
 const Logo = () => {
   return (
     <div>
-        <img src={logo} style={{height:'80%'}} />
+        <img src={logo} />
     </div>
   )
 }

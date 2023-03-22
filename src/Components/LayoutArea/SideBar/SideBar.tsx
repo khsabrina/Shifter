@@ -11,40 +11,40 @@ import Logo from '../Logo/Logo'
 function SideBar(): JSX.Element {
     return (
         <div className="SideBar">
-            <div style={{marginTop: '10px' , display:'flex',marginLeft: '7px'}}>
+            <div style={{marginTop: '10px' , display:'flex',marginLeft: '7px', marginBottom: '30px'}}>
                 <div>
                     <Logo/>
                 </div>
             </div>
-            <div style={{marginTop: '10px' , display:'flex',marginLeft: '7px'}}>
-                <div style={{display:'flex', alignItems:'center'}}>
+            <div style={{ display:'flex',marginLeft: '7px'}}>
+                <button style={{border: 'none', background: 'none', cursor: 'pointer', display:'flex', alignItems:'center'}}>
                     <HouseIcon/>
-                    <h6>Home</h6>
-                </div>
+                    <span>Home</span>
+                </button>
             </div>
-            <div style={{marginTop: '-30px' , display:'flex',marginLeft: '7px'}}>
-                <div style={{display:'flex', alignItems:'center'}}>
+            <div style={{ display:'flex',marginLeft: '7px'}}>
+                <button style={{border: 'none', background: 'none', cursor: 'pointer', display:'flex', alignItems:'center'}}>
                     <CalendarIcon/>
-                    <h6>Calendar</h6>
-                </div>
+                    <span>Calendar</span>
+                </button>
             </div>
-            <div style={{marginTop: '-30px' , display:'flex',marginLeft: '7px'}}>
-                <div style={{display:'flex', alignItems:'center'}}>
+            <div style={{ display:'flex',marginLeft: '7px'}}>
+                <button style={{border: 'none', background: 'none', cursor: 'pointer', display:'flex', alignItems:'center'}}>
                     <ProioritiserIcon/>
-                    <h6>Proioritiser</h6>
-                </div>
+                    <span>Proioritiser</span>
+                </button>
             </div>
-            <div style={{marginTop: '-30px' , display:'flex',marginLeft: '7px'}}>
-                <div style={{display:'flex', alignItems:'center'}}>
+            <div style={{ display:'flex',marginLeft: '7px'}}>
+                <button style={{border: 'none', background: 'none', cursor: 'pointer', display:'flex', alignItems:'center'}}>
                     <TeamIcon/>
-                    <h6>Team</h6>
-                </div>
+                    <span>Team</span>
+                </button>
             </div>
-            <div style={{marginTop: '-30px',display:'flex', marginLeft: '7px'}}>
-                <div style={{display:'flex', alignItems:'center'}}>
+            <div style={{display:'flex', marginLeft: '7px'}}>
+                <button style={{border: 'none', background: 'none', cursor: 'pointer', display:'flex', alignItems:'center'}}>
                     <LogoutIcon/>
-                    <h6>Logout</h6>
-                </div>
+                    <span>Logout</span>
+                </button>
             </div>
         </div>
     );
