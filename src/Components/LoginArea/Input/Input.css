@@ -1,3 +1,21 @@
+.Input .TextBox {
+    width: 100%;
+    margin: 5px 0;
+}
+
 .Input {
-	
+    width: 450px;
+    margin: 20px;
+    padding: 20px;
+    display: inline-block;
+    border: 1px solid black;
+    border-radius: 10px;
+    box-shadow: 5px 5px 10px;
+    text-align: left;
+}
+
+.Input button {
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0 0 20px 0;
 }
