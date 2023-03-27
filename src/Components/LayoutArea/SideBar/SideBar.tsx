@@ -16,31 +16,37 @@ function SideBar(): JSX.Element {
                     <Logo/>
                 </div>
             </div>
-            <div style={{ display:'flex',marginLeft: '7px'}}>
+            <div style={{ display:'flex',marginLeft: '7px',marginBottom: '10px'}}>
                 <button style={{border: 'none', background: 'none', cursor: 'pointer', display:'flex', alignItems:'center'}}>
                     <HouseIcon/>
                     <span>Home</span>
                 </button>
             </div>
-            <div style={{ display:'flex',marginLeft: '7px'}}>
+            <div style={{ display:'flex',marginLeft: '7px',marginBottom: '10px'}}>
                 <button style={{border: 'none', background: 'none', cursor: 'pointer', display:'flex', alignItems:'center'}}>
                     <CalendarIcon/>
                     <span>Calendar</span>
                 </button>
             </div>
-            <div style={{ display:'flex',marginLeft: '7px'}}>
+            <div style={{ display:'flex',marginLeft: '7px',marginBottom: '10px'}}>
                 <button style={{border: 'none', background: 'none', cursor: 'pointer', display:'flex', alignItems:'center'}}>
                     <ProioritiserIcon/>
                     <span>Proioritiser</span>
                 </button>
             </div>
-            <div style={{ display:'flex',marginLeft: '7px'}}>
+            <div style={{ display:'flex',marginLeft: '7px',marginBottom: '10px'}}>
                 <button style={{border: 'none', background: 'none', cursor: 'pointer', display:'flex', alignItems:'center'}}>
                     <TeamIcon/>
                     <span>Team</span>
                 </button>
             </div>
-            <div style={{display:'flex', marginLeft: '7px'}}>
+            <div style={{display:'flex', marginLeft: '7px',marginBottom: '10px'}}>
+                <button style={{border: 'none', background: 'none', cursor: 'pointer', display:'flex', alignItems:'center'}}>
+                    <SettingsIcon/>
+                    <span>Settings</span>
+                </button>
+            </div>
+            <div style={{display:'flex', marginLeft: '7px',marginBottom: '10px'}}>
                 <button style={{border: 'none', background: 'none', cursor: 'pointer', display:'flex', alignItems:'center'}}>
                     <LogoutIcon/>
                     <span>Logout</span>
