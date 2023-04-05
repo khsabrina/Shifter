@@ -1,6 +1,5 @@
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Layout from "./Components/LayoutArea/Layout/Layout";
 import Login from "./Components/LoginArea/Login/Login";
 import Home from "./Components/Pages/Home/Home"
 import Calendar from "./Components/Pages/Calendar/Calendar"
@@ -13,7 +12,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Login />} />
         <Route path="/home" element={<Home />} />
         <Route path="/calendar" element={<Calendar />} />
         <Route path="/prioritizer" element={<Prioritizer />} />
