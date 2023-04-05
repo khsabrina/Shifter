@@ -2,15 +2,18 @@ import "./Input.css";
 import { TextField, Button, ButtonGroup } from "@mui/material";
 import { Login } from "@mui/icons-material";
 import { useForm } from "react-hook-form";
+import { userLogin } from "../../../actions/apiActions";
 
 interface LoginForm {
     username: string;
     password: string;
 }
 function Input(): JSX.Element {
-    // const [userName, setUserName] = React.useState<string>('');
     const { register, handleSubmit, watch, formState: { errors } } = useForm<LoginForm>();
-    const onSubmit = (data: LoginForm) => { console.log(data); }
+    const onSubmit = (data: LoginForm) => {
+
+        userLogin(data);
+    }
     return (
         <div className="Input Box">
             <form
@@ -18,9 +21,6 @@ function Input(): JSX.Element {
             >
                 <TextField
                     label="Username"
-                    // get and set the useState ^
-                    // value={userName}
-                    // onChange={(e) => setUserName(e.target.value)}
                     variant="outlined"
                     className="TextBox"
                     {...register("username")}
