@@ -3,6 +3,8 @@ import { TextField, Button, ButtonGroup } from "@mui/material";
 import { Login } from "@mui/icons-material";
 import { useForm } from "react-hook-form";
 import { userLogin } from "../../../actions/apiActions";
+import { useNavigate } from "react-router-dom";
+import auth from "../../auth/auth";
 
 interface LoginForm {
     username: string;
@@ -10,9 +12,12 @@ interface LoginForm {
 }
 function Input(): JSX.Element {
     const { register, handleSubmit, watch, formState: { errors } } = useForm<LoginForm>();
+    const navigate = useNavigate();
     const onSubmit = (data: LoginForm) => {
-
         userLogin(data);
+        if (auth.isAuthenticated()) {
+            navigate('/home');
+        }
     }
     return (
         <div className="Input Box">

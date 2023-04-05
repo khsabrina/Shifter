@@ -1,5 +1,6 @@
-const URL = "http://127.0.0.1:8000/api";
+import auth from "../Components/auth/auth";
 
+const URL = "http://127.0.0.1:8000/api";
 
 // Helper POST Method
 const methodGet = () => {
@@ -51,7 +52,7 @@ const userLogin = async (user: LoginForm) => {
   }
   const data = await response.json();
   //data.??? depends on Yonatan backend
-  console.log(data.key);
+  auth.login(data.key);
 };
 
 
