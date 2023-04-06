@@ -13,14 +13,13 @@ interface LoginForm {
 function Input(): JSX.Element {
     const { register, handleSubmit, watch, formState: { errors } } = useForm<LoginForm>();
     const navigate = useNavigate();
-    const onSubmit = (data: LoginForm) => {
-        userLogin(data);
+    const onSubmit = async (data: LoginForm) => {
+        await userLogin(data);
         if (auth.isAuthenticated() === true) {
-            console.log(auth.isAuthenticated());
-            auth.logout();
-            navigate('/home');
+          auth.logout();
+          navigate('/home');
         }
-    }
+    };
     return (
         <div className="Input Box">
             <form
