@@ -3,11 +3,11 @@ import  "../../LayoutArea/Layout/Layout.css";
 
 
 
-function Home(): JSX.Element {
-  return (
-        <Layout PageName="Home" />  
+// function Home(): JSX.Element {
+//   return (
+//         // <Layout PageName="Home" />  
 
-  );
-}
+//   );
+// }
 
-export default Home;
+// export default Home;

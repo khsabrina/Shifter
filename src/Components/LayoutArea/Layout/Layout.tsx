@@ -3,11 +3,7 @@ import "./Layout.css";
 import UserCircle from "../UserCircle/UserCircle"
 import UserPic from '../UserCircle/NoPhotoUser.png'
 import { BrowserRouter as Router, Routes , Route, Link } from 'react-router-dom';
-import Home from '../../Pages/Home/Home';
-import Calendar from '../../Pages/Calendar/Calendar';
-import Prioritizer from '../../Pages/Prioritizer/Prioritizer';
-import Team from '../../Pages/Team/Team';
-import Settings from '../../Pages/Settings/Settings';
+
 
 
 interface User {
@@ -18,6 +14,7 @@ interface User {
 
 interface LayoutProps {
   PageName: string;
+  component: React.ComponentType<any>;
 }
 
 function Layout(props: LayoutProps): JSX.Element {
@@ -75,7 +72,7 @@ function Layout(props: LayoutProps): JSX.Element {
       <aside className="SideBar">
         <SideBar />
       </aside>
-      <div className="Calendar">{/* <Calander1/> */}</div>
+      <div className="Calendar"><props.component/></div>
     </div>
   );
 }
