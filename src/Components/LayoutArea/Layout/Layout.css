@@ -32,7 +32,6 @@
     .Calendar {
     display: table;
     height:30%;
-    background-color: white;
     border: 1px white;
     width: 100%;
     grid-column-start: 2;

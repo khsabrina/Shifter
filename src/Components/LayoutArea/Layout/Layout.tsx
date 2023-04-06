@@ -29,7 +29,19 @@ function Layout(props: LayoutProps): JSX.Element {
     fontSize: "40px",
     padding: "0 20px",
   };
-
+  const textStyle = {
+    border: '1px solid black',
+    background: 'none',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    borderRadius: '15px',
+    padding: '10px',
+    marginBottom: '10px',
+    textDecoration: 'none',
+    boxShadow: '0px 2px 2px rgba(0, 0, 0, 0.25)',
+    minWidth: '100px', // or any other value that suits your design
+  };
   const homeStyle = {
     textAlign: "center" as const,
     width: "100%",
