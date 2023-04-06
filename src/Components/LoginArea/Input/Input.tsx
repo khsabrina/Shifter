@@ -15,7 +15,9 @@ function Input(): JSX.Element {
     const navigate = useNavigate();
     const onSubmit = (data: LoginForm) => {
         userLogin(data);
-        if (auth.isAuthenticated()) {
+        if (auth.isAuthenticated() === true) {
+            console.log(auth.isAuthenticated());
+            auth.logout();
             navigate('/home');
         }
     }

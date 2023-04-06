@@ -46,13 +46,14 @@ interface LoginForm {
 
 const userLogin = async (user: LoginForm) => {
   const response = await fetch(`${URL}user/`, methodPost(user));
-  if (response.status != 200) {
+  if (response.status !== 200) {
     alert("incorrect username or password");
-    return;
   }
-  const data = await response.json();
-  //data.??? depends on Yonatan backend
-  auth.login(data.key);
+  else {
+    const data = await response.json();
+    //data.??? depends on Yonatan backend
+    auth.login(data.key);
+  }
 };
 
 
