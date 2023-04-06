@@ -1,6 +1,6 @@
 import auth from "../Components/auth/auth";
 
-const URL = "http://127.0.0.1:8000/api";
+const URL = "https://django-server-production-293f.up.railway.app/shifter/";
 
 // Helper POST Method
 const methodGet = () => {
@@ -45,7 +45,7 @@ interface LoginForm {
 
 
 const userLogin = async (user: LoginForm) => {
-  const response = await fetch(`${URL}/user/`, methodPost(user));
+  const response = await fetch(`${URL}user/`, methodPost(user));
   if (response.status != 200) {
     alert("incorrect username or password");
     return;
