@@ -1,18 +1,27 @@
 class Auth {
   authenticated = false;
   token = "";
+  name = ""
+  lastName = ""
+  userId = ""
   constructor() {
     this.authenticated = false;
   }
 
-  login(token: string) {
+  login(data: any) {
     this.authenticated = true;
-    this.token = token
+    this.token = data.token;
+    this.name = data.name;
+    this.lastName = data.lastName;
+    this.userId = data.userId;
   }
 
   logout() {
     this.authenticated = false;
     this.token = "";
+    this.name = "";
+    this.lastName = "";
+    this.userId = "";
   }
 
   isAuthenticated() {

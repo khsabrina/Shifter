@@ -5,19 +5,33 @@ import { useForm } from "react-hook-form";
 import { userLogin } from "../../../actions/apiActions";
 import { useNavigate } from "react-router-dom";
 import auth from "../../auth/auth";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface LoginForm {
     username: string;
     password: string;
 }
+
 function Input(): JSX.Element {
     const { register, handleSubmit, watch, formState: { errors } } = useForm<LoginForm>();
     const navigate = useNavigate();
     const onSubmit = async (data: LoginForm) => {
-        await userLogin(data);
+        const mesaage = await userLogin(data);
         if (auth.isAuthenticated() === true) {
-          auth.logout();
-          navigate('/home');
+            auth.logout();
+            navigate('/home');
+        }
+        else {
+            toast.error(mesaage, {
+                position: "top-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
         }
     };
     return (
@@ -28,16 +42,20 @@ function Input(): JSX.Element {
                 <TextField
                     label="Username"
                     variant="outlined"
-                    className="TextBox"
-                    {...register("username")}
+                    className={`TextBox ${errors.password ? "error" : ""}`}
+                    {...register("username", {
+                        required: true,
+                    })}
                 />
 
                 <TextField
                     label="Password"
                     variant="outlined"
-                    className="TextBox"
+                    className={`TextBox ${errors.password ? "error" : ""}`}
                     type='password'
-                    {...register("password", { required: true, minLength: 2, maxLength: { message: 'barak noob at react', value: 20 } })}
+                    {...register("password", {
+                        required: true,
+                    })}
                 />
 
                 <ButtonGroup variant="contained" fullWidth>
