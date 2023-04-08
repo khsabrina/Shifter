@@ -106,17 +106,6 @@ const Team = () => {
           <TableBody>
             {rows.map((row) => (
               <TableRow key={row.id}>
-                <TableCell padding="checkbox">
-                  <Checkbox
-                  indeterminate={selectedRows.length > 0 && selectedRows.length < rows.length}
-                  checked={selectedRows.length === rows.length}
-                  onChange={() =>
-                    selectedRows.length === rows.length
-                      ? setSelectedRows([])
-                      : setSelectedRows(rows.map((row) => row.id))
-                  }
-                />
-              </TableCell>
                 <TableCell>{row.name}</TableCell>
                 <TableCell>{row.jobDescription}</TableCell>
                 <TableCell>
