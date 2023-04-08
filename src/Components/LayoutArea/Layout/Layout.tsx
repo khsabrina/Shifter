@@ -2,8 +2,11 @@ import SideBar from "../SideBar/SideBar";
 import "./Layout.css";
 import UserCircle from "../UserCircle/UserCircle"
 import UserPic from '../UserCircle/NoPhotoUser.png'
-import { BrowserRouter as Router, Routes , Route, Link } from 'react-router-dom';
-
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import auth from "../../auth/auth";
+import Login from "../../LoginArea/Login/Login";
+import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 
 interface User {
@@ -18,6 +21,18 @@ interface LayoutProps {
 }
 
 function Layout(props: LayoutProps): JSX.Element {
+  const navigate = useNavigate();
+  const [isAuthenticated, setIsAuthenticated] = useState(auth.isAuthenticated());
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      console.log("asddsaa");
+      navigate('/login');
+    }
+  }, [isAuthenticated, navigate]);
+
+
+
   const headerStyle = {
     display: "flex",
     justifyContent: "space-between",
@@ -59,6 +74,11 @@ function Layout(props: LayoutProps): JSX.Element {
     imageSrc: UserPic,
   };
 
+  if (!isAuthenticated) {
+    // Show a loading or splash screen here
+    return <></>;
+  }
+
   return (
     <div className="Layout">
       <div className="Header">
@@ -72,7 +92,7 @@ function Layout(props: LayoutProps): JSX.Element {
       <aside className="SideBar">
         <SideBar />
       </aside>
-      <div className="Calendar"><props.component/></div>
+      <div className="Calendar"><props.component /></div>
     </div>
   );
 }

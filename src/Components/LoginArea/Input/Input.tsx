@@ -19,7 +19,7 @@ function Input(): JSX.Element {
     const onSubmit = async (data: LoginForm) => {
         const mesaage = await userLogin(data);
         if (auth.isAuthenticated() === true) {
-            auth.logout();
+            // auth.logout();
             navigate('/home');
         }
         else {

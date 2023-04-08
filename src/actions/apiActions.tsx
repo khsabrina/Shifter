@@ -9,6 +9,7 @@ const methodGet = () => {
     headers: {
       "content-type": "application/json",
       Accept: "application/json",
+      Authorization: `Bearer ${auth.token}`,
     },
   };
 };
@@ -61,6 +62,17 @@ const TeamInfo = async () => {
   if (response.status === 200) {
     return data
   }
+};
+
+
+const GetTeamShifts = async () => {
+  const response = await fetch(`${URL}shifts/`, methodGet());
+  const data = await response.json();
+  if (response.status === 200) {
+    //data.??? depends on Yonatan backend
+    return data;
+  }
+  return data.message
 };
 
 
@@ -189,6 +201,7 @@ const TeamInfo = async () => {
 export {
   userLogin,
   TeamInfo,
+  GetTeamShifts
   // userSignup,
   // fetchOrganizations,
   // fetchUsers,
