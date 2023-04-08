@@ -11,16 +11,16 @@ import { Link } from 'react-router-dom';
 import Logout from '../../Pages/Logout/Logout'
 
 const buttonStyle = {
-    border: '1px solid black',
+    // border: '1px solid black',
     background: 'none',
-    cursor: 'pointer',
+    // cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
-    borderRadius: '15px',
-    padding: '10px',
+    // borderRadius: '15px',
+    padding: '5px',
     marginBottom: '10px',
     textDecoration: 'none',
-    boxShadow: '0px 2px 2px rgba(0, 0, 0, 0.25)',
+    // boxShadow: '0px 2px 2px rgba(0, 0, 0, 0.25)',
     minWidth: '100px', // or any other value that suits your design
   };
   
@@ -31,7 +31,7 @@ const iconStyle = {
 };
 
 const textStyle = {
-  fontWeight: 'bold',
+  font: 'icon',
   color: 'black',
 };
 

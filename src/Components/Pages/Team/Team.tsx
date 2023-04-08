@@ -1,15 +1,20 @@
 import Layout from "../../LayoutArea/Layout/Layout";
+import UserPic from "./UserCircle/NoPhotoUser.png"
+// import TeamInfo from "../../../actions/apiActions/TeamInfo"
 
 import React, { useState } from 'react';
 import {Checkbox,Box,Table,TableBody,TableCell,TableContainer,TableHead,TableRow,Paper,
-IconButton,Button,Dialog,DialogTitle,DialogContent,DialogContentText,DialogActions,TextField,
+IconButton,Dialog,DialogTitle,DialogContent,DialogContentText,DialogActions,TextField, Button,
 } from '@mui/material';
 import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
+import UserCircle from "./UserCircle/UserCircle";
+import { alignProperty } from "@mui/material/styles/cssUtils";
 
 const initialRows = [
-  { id: 1, name: 'John Doe', jobDescription: 'Software Developer' },
-  { id: 2, name: 'Jane Smith', jobDescription: 'Project Manager' },
-  { id: 3, name: 'Bob Johnson', jobDescription: 'Graphic Designer' },
+  
+  { id: 1, imageSrc: UserPic, name: 'John Doe', jobDescription: 'Software Developer' },
+  { id: 2, imageSrc: UserPic, name: 'Jane Smith', jobDescription: 'Project Manager' },
+  { id: 3, imageSrc: UserPic, name: 'Bob Johnson', jobDescription: 'Graphic Designer' },
 ];
 
 const Team = () => {
@@ -18,12 +23,27 @@ const Team = () => {
   const [dialogMode, setDialogMode] = useState<'add' | 'edit'>('add');
   const [name, setName] = useState('');
   const [jobDescription, setJobDescription] = useState('');
+  const [imageSrc, setimageSrc] = useState<string>('');
   const [selectedRowId, setSelectedRowId] = useState<number | null>(null);
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const imgSrc = reader.result?.toString() || '';
+        console.log(imgSrc)
+        setimageSrc(imgSrc);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleAddRow = () => {
     setDialogMode('add');
     setName('');
     setJobDescription('');
+    setimageSrc(UserPic)
     setDialogOpen(true);
   };
 
@@ -32,6 +52,7 @@ const Team = () => {
     setName(row.name);
     setJobDescription(row.jobDescription);
     setSelectedRowId(row.id);
+    setimageSrc(row.imageSrc);
     setDialogOpen(true);
   };
 
@@ -66,6 +87,7 @@ const Team = () => {
         ...prevRows,
         {
           id: Date.now(),
+          imageSrc,
           name,
           jobDescription,
         },
@@ -76,6 +98,7 @@ const Team = () => {
           if (row.id === selectedRowId) {
             return {
               ...row,
+              imageSrc,
               name,
               jobDescription,
             };
@@ -89,12 +112,9 @@ const Team = () => {
 
   return (
     <>
-      <Button variant="outlined" onClick={handleAddRow}>
-        Add Row
-      </Button>
       {/* <Box borderRadius={8} overflow="hidden" width="80%" position="absolute" top="20%" left="15%" > */}
-      <Box borderRadius={8} overflow="hidden" width="80%" position="relative" height="400px" >
-      <TableContainer component={Paper} style={{maxHeight: 400, overflow: 'auto'}}>
+      <Box borderRadius={8} overflow="hidden" width="90%" position="relative" height="450px"  >
+      <TableContainer component={Paper} style={{maxHeight: 450, overflow: 'auto',minHeight: 450,width:'100%'}}>
         <Table width="100%">
           {/* <TableHead>
             <TableRow>
@@ -106,9 +126,10 @@ const Team = () => {
           <TableBody>
             {rows.map((row) => (
               <TableRow key={row.id}>
-                <TableCell>{row.name}</TableCell>
-                <TableCell>{row.jobDescription}</TableCell>
-                <TableCell>
+                <TableCell style={{display:'flex' ,justifyContent:'center'}}><UserCircle imageSrc={row.imageSrc} /></TableCell>
+                <TableCell style={{textAlign:'center'}}>{row.name}</TableCell>
+                <TableCell style={{textAlign:'center'}}>{row.jobDescription}</TableCell>
+                <TableCell style={{textAlign:'center'}}>
                   <IconButton onClick={() => handleEditRow(row)}>
                     <EditIcon />
                   </IconButton>
@@ -122,6 +143,9 @@ const Team = () => {
         </Table>
       </TableContainer>
       </Box>
+      <Button variant="outlined" style={{position: 'absolute', bottom: 16, right: 16, font: 'icon', color: 'black', borderColor: 'black'}}  onClick={handleAddRow}>
+        Add
+      </Button>
       <Dialog open={dialogOpen} onClose={handleDialogClose}>
         <DialogTitle>{dialogMode === 'add' ? 'Add Row' : 'Edit Row'}</DialogTitle>
         <DialogContent>
@@ -145,6 +169,7 @@ const Team = () => {
             value={jobDescription}
             onChange={handleJobDescriptionChange}
           />
+          <input type="file" accept="image/*" onChange={handleFileSelect} />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleDialogClose} color="primary">

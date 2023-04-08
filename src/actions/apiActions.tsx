@@ -55,6 +55,14 @@ const userLogin = async (user: LoginForm) => {
   return data.message
 };
 
+const TeamInfo = async () => {
+  const response = await fetch(`${URL}team/`, methodGet());
+  const data = await response.json();
+  if (response.status === 200) {
+    return data
+  }
+};
+
 
 // const userLogin = async (user: LoginForm) => {
 //   console.log(user);
@@ -180,6 +188,7 @@ const userLogin = async (user: LoginForm) => {
 
 export {
   userLogin,
+  TeamInfo,
   // userSignup,
   // fetchOrganizations,
   // fetchUsers,
