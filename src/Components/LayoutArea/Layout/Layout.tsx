@@ -26,7 +26,7 @@ function Layout(props: LayoutProps): JSX.Element {
     firstName: localStorage.getItem("firstName") as string | undefined,
     lastName: localStorage.getItem("lastName") as string | undefined,
     jobDescription: localStorage.getItem("jobDescription") as string | undefined,
-    imageSrc: localStorage.getItem("imageSrc") as string | undefined,
+    imageSrc: localStorage.getItem("imageSrc") === "Empty" ? UserPic as string | undefined : localStorage.getItem("imageSrc") as string | undefined,
   };
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(auth.isAuthenticated());

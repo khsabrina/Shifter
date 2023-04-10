@@ -1,4 +1,68 @@
 .Cell {
     text-align: -webkit-center;
 }
-    
+
+.custom-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+}
+/* ManagerEmployeeSwitch.css */
+.switch-container {
+    width: 120px;
+    height: 50px;
+    background-color:thistle;
+    border-radius: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+  }
+  
+  .switch {
+    width: 58px;
+    height: 47px;
+    border-radius: 18px;
+    background-color: rgb(255, 255, 255);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.3s ease;
+  }
+  
+  .switch.manager {
+    transform: translateX(30px);
+  }
+  
+  .switch.employee {
+    transform: translateX(-30px);
+  }
+  
+  .switch span {
+    font-size: 12px;
+    font-weight: icon;
+    color: rgb(227, 174, 227);
+  }
+
+
+  /* SelectDropdown.css */
+.select-dropdown {
+    padding: 5px 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px; /* Increase border-radius for slightly rounded corners */
+    background-color: #fff;
+    cursor: pointer;
+  }
+  
+  .select-dropdown option {
+    background-color: thistle;
+  }
+  
+  .select-dropdown option:nth-child(odd) {
+    background-color: #cdd9e1; /* Slightly darker shade of thistle for odd options */
+  }
+  
+  
+  
+  
