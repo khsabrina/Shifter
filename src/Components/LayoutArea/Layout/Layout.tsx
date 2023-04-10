@@ -10,10 +10,10 @@ import { useEffect, useState } from "react";
 
 
 interface User {
-  firstName: string;
-  lastName: string;
-  jobDescription: string;
-  imageSrc: string;
+  firstName: string | undefined;
+  lastName: string | undefined;
+  jobDescription: string | undefined;
+  imageSrc: string | undefined;
 }
 
 interface LayoutProps {
@@ -22,31 +22,16 @@ interface LayoutProps {
 }
 
 function Layout(props: LayoutProps): JSX.Element {
-  const user2: User ={
-    firstName : "authname",
-    lastName: "authlastName",
-    jobDescription: "authjobDescription",
-    imageSrc: "authimageSrc",
-  }
+  const user: User = {
+    firstName: localStorage.getItem("firstName") as string | undefined,
+    lastName: localStorage.getItem("lastName") as string | undefined,
+    jobDescription: localStorage.getItem("jobDescription") as string | undefined,
+    imageSrc: localStorage.getItem("imageSrc") as string | undefined,
+  };
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(auth.isAuthenticated());
-  const [d, Setd] = useState<User>(user2);
-  const [user, SetUser] = useState(d);
+  // const [user, SetUser] = useState(user);
 
-  useEffect(() => {
-    const user2: User = {
-      firstName : auth.name,
-      lastName: auth.lastName,
-      jobDescription: auth.jobDescription,
-      imageSrc: auth.imageSrc,
-    };
-    // user.firstName = auth.name;
-    // user.lastName =auth.lastName;
-    // user.jobDescription = auth.jobDescription;
-    // user.jobDescription= auth.imageSrc;
-    Setd(user2)
-
-  });
   useEffect(() => {
     if (!isAuthenticated) {
       console.log("asddsaa");

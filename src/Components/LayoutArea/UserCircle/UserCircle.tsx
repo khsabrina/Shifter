@@ -5,10 +5,10 @@ import auth from "../../auth/auth";
 
 
 interface User {
-  firstName: string;
-  lastName: string;
-  jobDescription: string;
-  imageSrc: string;
+  firstName: string | undefined;
+  lastName: string | undefined;
+  jobDescription: string | undefined;
+  imageSrc: string | undefined;
 }
 
 interface UserCircleProps {
@@ -59,7 +59,7 @@ const UserPopup: React.FC<UserPopupProps> = ({ user }) => {
   return (
     <div className="user-popup" style={popupStyle}>
       <div className="user-popup-image">
-        <img src={user.imageSrc} alt={user.firstName} />
+        <img src={user.imageSrc}/>
       </div>
       <div className="user-popup-details">
         <div className="user-popup-name">{user.firstName} {user.lastName}</div>
