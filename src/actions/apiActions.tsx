@@ -23,6 +23,7 @@ const methodPost = (data: any) => {
     headers: {
       "content-type": "application/json",
       Accept: "application/json",
+      Authorization: `Bearer ${localStorage.getItem("token")}`
     },
   };
 };
@@ -35,6 +36,7 @@ const methodPatch = (data: any) => {
     headers: {
       "content-type": "application/json",
       Accept: "application/json",
+      Authorization: `Bearer ${localStorage.getItem("token")}`
     },
   };
 };
@@ -65,15 +67,13 @@ const TeamInfo = async () => {
 };
 
 
-const GetTeamShifts = async () => {
-  return { "events": [{ "title": "barak", "date": "4/8/2023", "start": "8:30", "end": "16:30" }] }
-  // const response = await fetch(`${URL}shifts/`, methodGet());
-  // const data = await response.json();
-  // if (response.status === 200) {
-  //   //data.??? depends on Yonatan backend
-  //   return data;
-  // }
-  // return data.message
+const GetTeamShifts = async (id: number) => {
+  const response = await fetch(`${URL}shifts/${id}/`, methodGet());
+  const data = await response.json();
+  if (response.status === 200) {
+    return data;
+  }
+  return data.message
 };
 
 
