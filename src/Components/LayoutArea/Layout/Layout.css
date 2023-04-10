@@ -7,11 +7,11 @@
     /* background-image: url("../../LoginArea/Login/background.jpg"); */
     background-image: url("./backgroud.jpg");
     grid-template-columns: 11% 89%;
-    grid-template-rows: 15% 85%;
+    grid-template-rows: 10% 85%;
     text-align: -webkit-center;
-    }
-    
-    .SideBar {
+}
+
+.SideBar {
     position: fixed;
     top: 0;
     left: 0;
@@ -26,9 +26,9 @@
     margin-left: 5px;
     border-radius: 20px;
     width: 12%;
-    }
-    
-    .Header {
+}
+
+.Header {
     height: 60%;
     width: 97%;
     grid-row-end: 2;
@@ -41,16 +41,16 @@
     background-color: white;
     margin-top: 5px;
     margin-left: 25px;
-    
+
     /* grid-column-end: 3; */
-    }
-    
-    .Calendar {
+}
+
+.Calendar {
     display: table;
-    height:30%;
+    height: 30%;
     border: 1px white;
     width: 100%;
     grid-column-start: 2;
     grid-row-start: 2;
     grid-column-end: 5;
-    }
+}

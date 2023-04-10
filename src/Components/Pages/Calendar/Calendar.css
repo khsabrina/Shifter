@@ -9,3 +9,29 @@
     border-radius: 10px;
     overflow: hidden;
 }
+
+.calendar-container {
+    height: 80vh;
+    border: 1px solid black;
+    border-radius: 10px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.select-menu {
+    position: relative;
+    box-sizing: border-box;
+    width: fit-content;
+    border: 1px solid black;
+}
+
+.select-menu .select__menu {
+    min-width: fit-content;
+    /* set your desired minimum width */
+    width: auto !important;
+    /* override default width */
+}
+
+/* .select__multi-value {
+    background-color: black;
+} */
