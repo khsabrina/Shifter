@@ -1,35 +1,27 @@
 class Auth {
-  authenticated = false;
-  token = "";
-  name = ""
-  lastName = ""
-  userId = ""
-  jobDescription=""
-  imageSrc=""
   constructor() {
-    this.authenticated = false;
+
   }
 
   login(data: any) {
-    this.authenticated = true;
-    this.token = data.token;
-    this.name = data.name;
-    this.lastName = data.lastName;
-    this.userId = data.userId;
-    this.jobDescription = data.jobDescription;
-    this.imageSrc = data.imageSrc;
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("firstName", data.name);
+    localStorage.setItem("lastName", data.lastName);
+    localStorage.setItem("userId", data.userId);
+    localStorage.setItem("userId", data.userId);
+    localStorage.setItem("jobDescription", data.jobDescription);
+    localStorage.setItem("imageSrc", data.imageSrc);
   }
 
   logout() {
-    this.authenticated = false;
-    this.token = "";
-    this.name = "";
-    this.lastName = "";
-    this.userId = "";
+    localStorage.removeItem("token");
+    localStorage.removeItem("firstName");
+    localStorage.removeItem("lastName");
+    localStorage.removeItem("userId");
   }
 
   isAuthenticated() {
-    return this.authenticated;
+    return localStorage.getItem("token") !== null
   }
 }
 

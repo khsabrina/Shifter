@@ -4,4 +4,8 @@
 
 .MyCalendar {
     background-color: #f0f0f0;
+    width: 95%;
+    border: 1px solid black;
+    border-radius: 10px;
+    overflow: hidden;
 }

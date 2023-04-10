@@ -18,6 +18,7 @@ export default function App() {
         <Route path="/prioritizer" element={<Prioritizer />} />
         <Route path="/team" element={<Team />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/" element={<Login />} />
       </Routes>
     </BrowserRouter>
   );

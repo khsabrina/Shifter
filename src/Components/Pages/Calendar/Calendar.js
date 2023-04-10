@@ -29,8 +29,33 @@ class MyCalendar extends Component {
     async componentDidMount() {
         // Call your GetUserEvents function to get events
         const userEvents = await GetTeamShifts();
+        const eventToPresent = [];
+        userEvents.events.forEach((userEvent) => {
+            // const start_hour = 12;
+            // const start_minute = 0;
+            // const end_hour = 17;
+            // const end_minute = 30;
+            // const day = 7;
+            // const month = 4;
+            // const year = 2023;
+            // const title = "title"
+            // const color = "#4CAF50";
+            // eventToPresent.push({
+            //     start: moment().set({ hour: start_hour, minute: start_minute, second: 0 }).toDate(),
+            //     end: moment().set({ hour: end_hour, minute: end_minute, second: 0 }).toDate(),
+            //     title: title,
+            //     color: color // custom color for this event
+            // })
+            eventToPresent.push({
+                start: moment("2023-04-07T09:00:00").toDate(),
+                end: moment("2023-04-08T07:00:00").toDate(),
+                title: "Some title",
+                color: "#FFC107" // custom color for this event
+            })
+        });
+
         // Update state with the events
-        this.setState({ events: userEvents });
+        this.setState({ events: eventToPresent });
     }
 
     // function to generate styles for each event based on its color property
@@ -49,10 +74,17 @@ class MyCalendar extends Component {
                     localizer={localizer}
                     defaultDate={new Date()}
                     events={this.state.events}
-                    style={{ height: "80vh" }}
-                    view="week"
-                    views={["week"]}
+                    style={{ height: "80vh", border: "1px solid black", borderRadius: "10px", boxSizing: "border-box", overflow: "hidden" }}
+                    defaultView="week"
+                    views={["day", "week"]}
+                    onView={(view) => this.setState({ view })}
                     eventPropGetter={this.eventStyleGetter} // apply custom styles to events
+                    timeGutterFormat="HH:mm"
+                    formats={{
+                        timeGutterFormat: (date, culture, localizer) =>
+                            localizer.format(date, "HH:mm", culture)
+                    }}
+                    showCurrentTimeIndicator={false}
                 />
             </div>
         );
