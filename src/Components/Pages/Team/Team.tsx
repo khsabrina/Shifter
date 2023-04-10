@@ -1,8 +1,8 @@
 import Layout from "../../LayoutArea/Layout/Layout";
 import UserPic from "./UserCircle/NoPhotoUser.png"
-// import TeamInfo from "../../../actions/apiActions/TeamInfo"
+import {TeamInfo} from "../../../actions/apiActions"
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {Checkbox,Box,Table,TableBody,TableCell,TableContainer,TableHead,TableRow,Paper,
 IconButton,Dialog,DialogTitle,DialogContent,DialogContentText,DialogActions,TextField, Button,
 } from '@mui/material';
@@ -10,15 +10,23 @@ import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
 import UserCircle from "./UserCircle/UserCircle";
 import { alignProperty } from "@mui/material/styles/cssUtils";
 
-const initialRows = [
+
+interface Row {
+  id: number;
+  imageSrc: string;
+  name: string;
+  jobDescription: string;
+}
+// const initialRows = [
   
-  { id: 1, imageSrc: UserPic, name: 'John Doe', jobDescription: 'Software Developer' },
-  { id: 2, imageSrc: UserPic, name: 'Jane Smith', jobDescription: 'Project Manager' },
-  { id: 3, imageSrc: UserPic, name: 'Bob Johnson', jobDescription: 'Graphic Designer' },
-];
+//   { id: 1, imageSrc: UserPic, name: 'John Doe', jobDescription: 'Software Developer' },
+//   { id: 2, imageSrc: UserPic, name: 'Jane Smith', jobDescription: 'Project Manager' },
+//   { id: 3, imageSrc: UserPic, name: 'Bob Johnson', jobDescription: 'Graphic Designer' },
+// ];
 
 const Team = () => {
-  const [rows, setRows] = useState(initialRows);
+  const [teamlist, setTeamlist] = useState<Row[]>([]);
+  const [rows, setRows] = useState(teamlist);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<'add' | 'edit'>('add');
   const [name, setName] = useState('');
@@ -26,6 +34,22 @@ const Team = () => {
   const [imageSrc, setimageSrc] = useState<string>('');
   const [selectedRowId, setSelectedRowId] = useState<number | null>(null);
 
+  useEffect(() => {
+    async function fetchData() {
+      const result = await TeamInfo();
+      const items = result.employee.map((item, index) => {
+        return {
+          ...item,
+          id: index + 1,
+          imageSrc: UserPic
+        };
+      });
+      setTeamlist(items);
+      setRows(items)
+    }
+    fetchData()
+  }, []);
+  
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -47,7 +71,7 @@ const Team = () => {
     setDialogOpen(true);
   };
 
-  const handleEditRow = (row: typeof initialRows[0]) => {
+  const handleEditRow = (row: typeof teamlist[0]) => {
     setDialogMode('edit');
     setName(row.name);
     setJobDescription(row.jobDescription);

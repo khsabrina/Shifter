@@ -10,8 +10,9 @@ import { useEffect, useState } from "react";
 
 
 interface User {
-  name: string;
-  age: number;
+  firstName: string;
+  lastName: string;
+  jobDescription: string;
   imageSrc: string;
 }
 
@@ -21,9 +22,31 @@ interface LayoutProps {
 }
 
 function Layout(props: LayoutProps): JSX.Element {
+  const user2: User ={
+    firstName : "authname",
+    lastName: "authlastName",
+    jobDescription: "authjobDescription",
+    imageSrc: "authimageSrc",
+  }
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(auth.isAuthenticated());
+  const [d, Setd] = useState<User>(user2);
+  const [user, SetUser] = useState(d);
 
+  useEffect(() => {
+    const user2: User = {
+      firstName : auth.name,
+      lastName: auth.lastName,
+      jobDescription: auth.jobDescription,
+      imageSrc: auth.imageSrc,
+    };
+    // user.firstName = auth.name;
+    // user.lastName =auth.lastName;
+    // user.jobDescription = auth.jobDescription;
+    // user.jobDescription= auth.imageSrc;
+    Setd(user2)
+
+  });
   useEffect(() => {
     if (!isAuthenticated) {
       console.log("asddsaa");
@@ -68,11 +91,9 @@ function Layout(props: LayoutProps): JSX.Element {
     marginTop: "5px",
   };
 
-  const user: User = {
-    name: "John Doe",
-    age: 32,
-    imageSrc: UserPic,
-  };
+
+
+
 
   if (!isAuthenticated) {
     // Show a loading or splash screen here

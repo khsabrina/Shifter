@@ -4,6 +4,8 @@ class Auth {
   name = ""
   lastName = ""
   userId = ""
+  jobDescription=""
+  imageSrc=""
   constructor() {
     this.authenticated = false;
   }
@@ -14,6 +16,8 @@ class Auth {
     this.name = data.name;
     this.lastName = data.lastName;
     this.userId = data.userId;
+    this.jobDescription = data.jobDescription;
+    this.imageSrc = data.imageSrc;
   }
 
   logout() {

@@ -50,7 +50,7 @@ const userLogin = async (user: LoginForm) => {
   const data = await response.json();
   if (response.status === 200) {
     //data.??? depends on Yonatan backend
-    auth.login(data.key);
+    auth.login(data);
     return "work"
   }
   return data.message

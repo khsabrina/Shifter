@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import './UserCircle.css';
 import UserPic from './NoPhotoUser.png'
+import auth from "../../auth/auth";
+
 
 interface User {
-  name: string;
-  age: number;
+  firstName: string;
+  lastName: string;
+  jobDescription: string;
   imageSrc: string;
 }
 
@@ -14,6 +17,9 @@ interface UserCircleProps {
 
 const UserCircle: React.FC<UserCircleProps> = ({ user }) => {
   const [showPopup, setShowPopup] = useState(false);
+  const [userDetails, setUserDetails] = useState<User>();
+
+
 
   const handleMouseEnter = () => {
     setShowPopup(true);
@@ -25,14 +31,14 @@ const UserCircle: React.FC<UserCircleProps> = ({ user }) => {
 
   return (
     <div className="user-circle" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-      <img src={user.imageSrc} alt={user.name} />
+      <img src={user.imageSrc} alt={user.firstName} />
       {showPopup && <UserPopup user={user} />}
     </div>
   );
 };
 
 interface UserPopupProps {
-  user: User;
+  user: User ;
 }
 
 const UserPopup: React.FC<UserPopupProps> = ({ user }) => {
@@ -47,16 +53,17 @@ const UserPopup: React.FC<UserPopupProps> = ({ user }) => {
     borderRadius: "30px",
     boxShadow: "0 2px 10px rgba(0,0,0,0.3)",
     alignItems: "center",
+    zIndex: '999'
   };
 
   return (
     <div className="user-popup" style={popupStyle}>
       <div className="user-popup-image">
-        <img src={user.imageSrc} alt={user.name} />
+        <img src={user.imageSrc} alt={user.firstName} />
       </div>
       <div className="user-popup-details">
-        <div className="user-popup-name">{user.name}</div>
-        <div className="user-popup-age">{user.age} years old</div>
+        <div className="user-popup-name">{user.firstName} {user.lastName}</div>
+        <div className="user-popup-age">{user.jobDescription}</div>
       </div>
     </div>
   );
