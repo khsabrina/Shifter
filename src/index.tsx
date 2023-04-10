@@ -7,8 +7,21 @@ import Prioritizer from "./Components/Pages/Prioritizer/Prioritizer"
 import Team from "./Components/Pages/Team/Team"
 import Settings from "./Components/Pages/Settings/Settings"
 import "./index.css";
+import { useEffect } from "react";
+import auth from "./Components/auth/auth";
 
 export default function App() {
+  useEffect(() => {
+    function handleBeforeUnload() {
+      auth.logout();
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
   return (
     <BrowserRouter>
       <Routes>

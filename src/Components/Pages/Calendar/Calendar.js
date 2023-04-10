@@ -10,48 +10,26 @@ const localizer = momentLocalizer(moment);
 
 class MyCalendar extends Component {
     state = {
-        events: [
-            // {
-            //     start: moment().set({ hour: 9, minute: 0, second: 0 }).toDate(),
-            //     end: moment().set({ hour: 17, minute: 0, second: 0 }).toDate(),
-            //     title: "Some title",
-            //     color: "#FFC107" // custom color for this event
-            // },
-            // {
-            //     start: moment().set({ hour: 12, minute: 0, second: 0 }).toDate(),
-            //     end: moment().set({ hour: 20, minute: 0, second: 0 }).toDate(),
-            //     title: "Other title",
-            //     color: "#4CAF50" // custom color for this event
-            // }
-        ]
+        events: []
     };
 
     async componentDidMount() {
         // Call your GetUserEvents function to get events
-        const userEvents = await GetTeamShifts();
+        const userEvents = await GetTeamShifts(0);
         const eventToPresent = [];
-        userEvents.events.forEach((userEvent) => {
-            // const start_hour = 12;
-            // const start_minute = 0;
-            // const end_hour = 17;
-            // const end_minute = 30;
-            // const day = 7;
-            // const month = 4;
-            // const year = 2023;
-            // const title = "title"
-            // const color = "#4CAF50";
-            // eventToPresent.push({
-            //     start: moment().set({ hour: start_hour, minute: start_minute, second: 0 }).toDate(),
-            //     end: moment().set({ hour: end_hour, minute: end_minute, second: 0 }).toDate(),
-            //     title: title,
-            //     color: color // custom color for this event
-            // })
-            eventToPresent.push({
-                start: moment("2023-04-07T09:00:00").toDate(),
-                end: moment("2023-04-08T07:00:00").toDate(),
-                title: "Some title",
-                color: "#FFC107" // custom color for this event
-            })
+        userEvents.shifts.forEach((userEvent) => {
+            let color = userEvent.color
+            let title = userEvent.title
+            for (let i = 0; i < userEvent.start.length; i++) {
+                let start = userEvent.start[i]
+                let end = userEvent.end[i]
+                eventToPresent.push({
+                    start: moment(start).toDate(),
+                    end: moment(end).toDate(),
+                    title: title,
+                    color: color
+                })
+            }
         });
 
         // Update state with the events
@@ -67,6 +45,9 @@ class MyCalendar extends Component {
         };
     };
 
+    handleSelectEvent = (event) => window.alert(event.title);
+
+
     render() {
         return (
             <div className="MyCalendar">
@@ -79,12 +60,13 @@ class MyCalendar extends Component {
                     views={["day", "week"]}
                     onView={(view) => this.setState({ view })}
                     eventPropGetter={this.eventStyleGetter} // apply custom styles to events
-                    timeGutterFormat="HH:mm"
                     formats={{
                         timeGutterFormat: (date, culture, localizer) =>
                             localizer.format(date, "HH:mm", culture)
                     }}
                     showCurrentTimeIndicator={false}
+                    dayLayoutAlgorithm="no-overlap"
+                    onSelectEvent={this.handleSelectEvent}
                 />
             </div>
         );
