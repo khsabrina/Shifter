@@ -7,6 +7,17 @@
     align-items: center;
     justify-content: space-evenly;
 }
+
+.custom-line {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+  }
+  
+  .custom-line > * + * {
+    margin-top: 1rem;
+  }
 /* ManagerEmployeeSwitch.css */
 .switch-container {
     width: 120px;
@@ -39,8 +50,8 @@
   }
   
   .switch span {
+    font: icon;
     font-size: 12px;
-    font-weight: icon;
     color: rgb(227, 174, 227);
   }
 
@@ -55,13 +66,16 @@
     cursor: pointer;
   }
   
-  .select-dropdown option {
+  /* .select-dropdown option {
     background-color: thistle;
+  } */
+  .select-dropdown option:hover {
+    pointer-events: none;
+    background-color: transparent;
   }
-  
-  .select-dropdown option:nth-child(odd) {
+  /* .select-dropdown option:nth-child(odd) {
     background-color: #cdd9e1; /* Slightly darker shade of thistle for odd options */
-  }
+  /* } */ 
   
   
   

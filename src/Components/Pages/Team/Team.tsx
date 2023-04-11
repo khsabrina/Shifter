@@ -3,8 +3,8 @@ import UserPic from "./UserCircle/NoPhotoUser.png"
 import {TeamInfo} from "../../../actions/apiActions"
 import "./Team.css"
 import React, { ChangeEvent, useEffect, useState } from 'react';
-import {Checkbox,Box,Table,TableBody,TableCell,TableContainer,TableHead,TableRow,Paper,Switch, FormControlLabel
-,IconButton,Dialog,DialogTitle,DialogContent,DialogContentText,DialogActions,TextField, Button,
+import {MenuItem,Checkbox,Box,Table,TableBody,TableCell,TableContainer,TableHead,TableRow,Paper,Switch, FormControlLabel
+,IconButton,Dialog,DialogTitle,DialogContent,DialogContentText,DialogActions,TextField, Button, FormControl, InputLabel, Select,
 } from '@mui/material';
 import { Delete as DeleteIcon, Edit as EditIcon, Email } from '@mui/icons-material';
 import UserCircle from "./UserCircle/UserCircle";
@@ -17,6 +17,7 @@ interface Row {
   imageSrc: string;
   name: string;
   jobDescription: string;
+  team: string;
 }
 
 interface NewUser {
@@ -58,6 +59,13 @@ const Team = () => {
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
   const [dialogMode, setDialogMode] = useState<'add' | 'edit'>('add');
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [nameSearch, setNameSearch] = useState('');
+  const [jobDescriptionSearch, setJobDescriptionSearch] = useState('');
+  const [teamSearch, setTeamSearch] = useState('');
+  const [nameList, setNameList] = useState([]);
+  const [jobDescriptionList, setJobDescriptionList] = useState([]);
+  const [teamsList, setTeamList] = useState([]);
+
   useEffect(() => {
     async function fetchData() {
       const result = await TeamInfo();
@@ -65,11 +73,33 @@ const Team = () => {
         return {
           ...item,
           id: index + 1,
-          imageSrc: UserPic
+          imageSrc: UserPic,
+          name: item.name + " " + item.lastName,
+        };
+      });
+      const names = result.employee.map((item, index) => {
+        return {
+          id: index + 1,
+          name: item.name + " " + item.name,
+        };
+      });
+      const teams = result.employee.map((item, index) => {
+        return {
+          id: index + 1,
+          team: item.team,
+        };
+      });
+      const jobDescriptions = result.employee.map((item, index) => {
+        return {
+          id: index + 1,
+          jobDescription: item.jobDescription,
         };
       });
       setTeamlist(items);
-      setRows(items)
+      setRows(items);
+      setNameList(names);
+      setTeamList(teams);
+      setJobDescription(jobDescriptions)
     }
     fetchData()
   }, []);
@@ -154,33 +184,78 @@ const Team = () => {
     if (dialogMode === 'add') {
       setRows((prevRows) => [
         ...prevRows,
-        {id: Date.now(),imageSrc,name,jobDescription},
+        {id: Date.now(),imageSrc,name,jobDescription,team},
       ]);
     } 
     setDialogOpen(false);
   };
 
+
+  const FilterBy = (rows: Row[], teamSearch: string, jobDescriptionSearch: string, nameSearch: string) => {
+    return rows.filter((row) => {
+      if (teamSearch === "" && nameSearch === "" && row.jobDescription === jobDescriptionSearch) {
+        return true;
+      }
+      if (jobDescriptionSearch === "" && row.team === teamSearch) {
+        return true;
+      }
+      if (jobDescriptionSearch === row.jobDescription && row.team === teamSearch) {
+        return true;
+      }
+      if (jobDescriptionSearch === "" && teamSearch === "") {
+        return true;
+      }
+      return false;
+    });
+  };
+  const handleSearch = () => {
+    const filteredRows = FilterBy(teamlist, teamSearch, jobDescriptionSearch,nameSearch);
+    setRows(filteredRows);
+  };
+
   return (
     <>
-      <Box mt={2} display="flex" alignItems="center">
-        <TextField
-          label="Search"
+    <div className="custom-line">
+    <Box sx={{ backgroundColor: '#FFFFFF', p: 0 , maxWidth: 'fit-content'}}>
+      <TextField
+          label="Name Search"
+          value={nameSearch}
+          onChange={(e) => setNameSearch(e.target.value)}
           variant="outlined"
-          size="small"
-          style={{ marginRight: 'auto' }}
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
+          InputLabelProps={{ style: { fontSize: 12 } }}
+          inputProps={{ style: { fontSize: 12 } }}          
+          sx={{ py: 0, fontSize: 12 }} size="small"
         />
-        <Button variant="outlined" style={{ marginLeft: 8 }} onClick={handleShowBar}>
-          change 
-          {/* {showSearchBar && <SearchBar filters={filters} onChange={handleFilterChange} />} */}
-          {showSearchBar && <SearchBar data={data} teamNames={teamNames} />}
-
-        </Button>
-        <Button variant="outlined" style={{ marginLeft: 8 }} onClick={handleAddRow}>
-          Add
-        </Button>
-      </Box>
+        <FormControl variant="outlined" sx={{ mr: 2 ,minWidth: 120, py: 0}}  size="small">
+          <InputLabel id="team-select-label" sx={{ fontSize: 12 }}>Team</InputLabel>
+          <Select
+            labelId="team-select-label"
+            value={teamSearch}
+            onChange={(e) => setTeamSearch(e.target.value as string)}
+            label="Team"
+            size="small"
+            sx={{ p: 0, fontSize: 12 }}
+          >
+            <MenuItem value="">None</MenuItem>
+            {teamlist.map((row) => (<MenuItem value={row.team}>{row.team}</MenuItem>))}
+          </Select>
+        </FormControl>
+        <FormControl variant="outlined" sx={{ mr: 2 ,minWidth: 200, py: 0}} size="small">
+          <InputLabel id="job-description-select-label" sx={{ fontSize: 12 }}>Job Description</InputLabel>
+          <Select
+            labelId="job-description-select-label"
+            value={jobDescriptionSearch}
+            onChange={(e) => setJobDescriptionSearch(e.target.value as string)}
+            label="Job Description"
+            size="small"
+            sx={{ p: 0, fontSize: 12 }}
+          >
+            <MenuItem value="">None</MenuItem>
+            {teamlist.map((row) => (<MenuItem value={row.jobDescription}>{row.jobDescription}</MenuItem>))}
+          </Select>
+        </FormControl>
+        <button onClick={handleSearch}>Search</button>
+    </Box>
       <Box borderRadius={8} overflow="hidden" width="90%" position="relative" height="450px">
         <TableContainer component={Paper} style={{ maxHeight: 450, overflow: 'auto', minHeight: 450, width: '100%' }}>
           <Table width="100%">
@@ -192,13 +267,7 @@ const Team = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {rows
-                .filter(row => {
-                  if (!searchText) return true;
-                  const nameMatches = row.name.toLowerCase().includes(searchText.toLowerCase());
-                  const jobDescMatches = row.jobDescription.toLowerCase().includes(searchText.toLowerCase());
-                  return nameMatches || jobDescMatches;
-                })
+              {FilterBy(teamlist, teamSearch, jobDescriptionSearch, nameSearch)
                 .map((row) => (
                   <TableRow key={row.id}>
                     <TableCell style={{ display: 'flex', justifyContent: 'center' }}>
@@ -206,7 +275,7 @@ const Team = () => {
                     </TableCell>
                     <TableCell style={{ textAlign: 'center' }}>{row.name}</TableCell>
                     <TableCell style={{ textAlign: 'center' }}>{row.jobDescription}</TableCell>
-                    <TableCell style={{ textAlign: 'center' }}>Noc Team</TableCell>
+                    <TableCell style={{ textAlign: 'center' }}>{row.team}</TableCell>
                     <TableCell style={{ textAlign: 'center' }}>
                       <IconButton onClick={() => handleEditRow(row)}>
                         <EditIcon />
@@ -221,6 +290,7 @@ const Team = () => {
           </Table>
         </TableContainer>
       </Box>
+      </div>
       {dialogOpen && <Dialog open={true} onClose={handleDialogClose}>
         <DialogTitle>{dialogMode === 'add' ? 'Add Employee' : name }</DialogTitle>
           <DialogContent>
@@ -253,7 +323,7 @@ const Team = () => {
             </div>
             <select className="select-dropdown" onChange={handleTeamChange}>
               {teamNames.map((option, index) => (
-                <option key={index} value={option}>
+                <option onMouseEnter={() => {}} key={index} value={option}>
                   {option}
                 </option>
               ))}
