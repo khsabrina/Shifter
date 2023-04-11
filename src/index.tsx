@@ -26,7 +26,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/home" element={<Home />} />
+        {/* <Route path="/home" element={<Home />} /> */}
         <Route path="/calendar" element={<Calendar />} />
         <Route path="/prioritizer" element={<Prioritizer />} />
         <Route path="/team" element={<Team />} />

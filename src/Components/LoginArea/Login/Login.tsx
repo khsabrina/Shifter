@@ -12,7 +12,7 @@ function Login(): JSX.Element {
 
     useEffect(() => {
         if (isAuthenticated) {
-            navigate('/home');
+            navigate('/calendar');
         }
     }, [isAuthenticated, navigate]);
     if (isAuthenticated) {

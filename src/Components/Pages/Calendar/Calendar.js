@@ -7,13 +7,17 @@ import "./Calendar.css";
 import { GetTeamShifts } from "../../../actions/apiActions";
 import Select from 'react-select';
 import swal from 'sweetalert';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 
 const localizer = momentLocalizer(moment);
 class MyCalendar extends Component {
     state = {
         events: [],
-        selectedTitles: []
+        selectedTitles: [],
+        selectedDay: new Date(),
+        lastDateGotShifts: new Date(),
     };
 
     handleChange = (selectedOptions) => {
@@ -54,9 +58,38 @@ class MyCalendar extends Component {
         button: 'OK'
     });
 
+    handleDateChange = (date) => {
+        const timeDifference = Math.abs(this.state.selectedDay.getTime() - date.getTime());
+
+        const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
+        this.setState({ selectedDay: date });
+        if (daysDifference >= 75) {
+            this.getShiftsToDate(date);
+            this.setState({ lastDateGotShifts: date });
+        }
+    }
+
+    async getShiftsToDate(date) {
+        const userEvents = await GetTeamShifts(0, date);
+        const events = userEvents.shifts.flatMap(shift => {
+            const { color, title, start, end } = shift;
+            if (title === localStorage.getItem("firstName")) {
+                const selectedTitles = [title]
+                this.setState({ selectedTitles })
+            }
+            return start.map((startDate, index) => ({
+                start: moment(startDate).toDate(),
+                end: moment(end[index]).toDate(),
+                title,
+                color
+            }));
+        });
+        this.setState({ events });
+    }
+
 
     render() {
-        const { events, selectedTitles } = this.state;
+        const { events, selectedTitles, selectedDay } = this.state;
         const titles = [...new Set(events.map(event => event.title))].sort(); // get unique titles and sort alphabetically
         const titleColorMap = events.reduce((map, event) => {
             map[event.title] = event.color;
@@ -66,39 +99,49 @@ class MyCalendar extends Component {
             label: group.label,
             options: group.options.map(title => ({ value: title, label: title, color: titleColorMap[title] }))
         }));
+        const colorStyles = {
+            option: (styles, { data }) => { return { ...styles, color: data.color } },
+            multiValue: (styles, { data }) => { return { ...styles, backgroundColor: data.color, color: "#fff" } },
+            multiValueRemove: (styles, { data }) => { return { ...styles, color: "#fff", cursor: 'pointer' } },
+            multiValueLabel: (styles, { data }) => { return { ...styles, color: "#fff" } },
+        }
+        const defaultSelectedOptions = selectedTitles.map(title => ({ value: title, label: title, color: titleColorMap[title] }));
         return (
-            <div className="topdiv">
+            <div className="calendar" style={{ position: 'relative' }}>
                 <label htmlFor="select-menu">Select employees:</label>
                 <Select
-                    value={selectedTitles.map(title => ({ value: title, label: title }))}
                     options={groupedOptions}
                     isMulti
                     onChange={this.handleChange}
                     className="select-menu"
                     classNamePrefix="select"
-                    styles={{
-                        option: (styles, { data }) => ({ ...styles, backgroundColor: data.color }),
-                    }}
+                    styles={colorStyles}
+                    value={defaultSelectedOptions}
                 />
-                <div className="MyCalendar">
-                    <Calendar
-                        localizer={localizer}
-                        defaultDate={new Date()}
-                        events={events.filter(event => selectedTitles.includes(event.title))}
-                        className="calendar-container"
-                        defaultView="week"
-                        views={["day", "week"]}
-                        onView={(view) => this.setState({ view })}
-                        eventPropGetter={this.eventStyleGetter} // apply custom styles to events
-                        formats={{
-                            timeGutterFormat: (date, culture, localizer) =>
-                                localizer.format(date, "HH:mm", culture)
-                        }}
-                        showCurrentTimeIndicator={false}
-                        dayLayoutAlgorithm="no-overlap"
-                        onSelectEvent={this.handleSelectEvent}
-                    />
-                </div>
+                <DatePicker
+                    selected={selectedDay}
+                    onChange={this.handleDateChange}
+                    className="date-picker"
+                    dateFormat="MM/dd/yyyy"
+                />
+                <Calendar
+                    localizer={localizer}
+                    events={events.filter(event => selectedTitles.includes(event.title))}
+                    className="calendar-container"
+                    defaultView="week"
+                    views={["day", "week"]}
+                    onView={(view) => this.setState({ view })}
+                    eventPropGetter={this.eventStyleGetter} // apply custom styles to events
+                    formats={{
+                        timeGutterFormat: (date, culture, localizer) =>
+                            localizer.format(date, "HH:mm", culture)
+                    }}
+                    showCurrentTimeIndicator={false}
+                    dayLayoutAlgorithm="no-overlap"
+                    onSelectEvent={this.handleSelectEvent}
+                    date={this.state.selectedDay}
+                    onNavigate={date => { this.handleDateChange(date); }}
+                />
             </div>
         );
     }

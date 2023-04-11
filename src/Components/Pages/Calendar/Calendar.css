@@ -2,20 +2,14 @@
     background-color: transparent !important;
 }
 
-.MyCalendar {
-    background-color: #f0f0f0;
-    width: 95%;
-    border: 1px solid black;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
 .calendar-container {
     height: 80vh;
     border: 1px solid black;
     border-radius: 10px;
     box-sizing: border-box;
     overflow: hidden;
+    background-color: #f0f0f0;
+    width: 95%;
 }
 
 .select-menu {
@@ -32,6 +26,6 @@
     /* override default width */
 }
 
-/* .select__multi-value {
-    background-color: black;
-} */
+.rbc-allday-cell {
+    display: none;
+}

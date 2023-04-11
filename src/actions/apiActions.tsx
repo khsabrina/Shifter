@@ -67,8 +67,12 @@ const TeamInfo = async () => {
 };
 
 
-const GetTeamShifts = async (id: number) => {
-  const response = await fetch(`${URL}shifts/${id}/`, methodGet());
+const GetTeamShifts = async (id: number, date: Date) => {
+  let myUrl = `${URL}shifts/${id}/`;
+  if (date) {
+    myUrl += `?date=${URL}`;
+  }
+  const response = await fetch(`${myUrl}`, methodGet());
   const data = await response.json();
   if (response.status === 200) {
     return data;

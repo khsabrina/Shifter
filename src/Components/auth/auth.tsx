@@ -8,7 +8,6 @@ class Auth {
     localStorage.setItem("firstName", data.name);
     localStorage.setItem("lastName", data.lastName);
     localStorage.setItem("userId", data.userId);
-    localStorage.setItem("userId", data.userId);
     localStorage.setItem("jobDescription", data.jobDescription);
     localStorage.setItem("imageSrc", data.imageSrc);
   }
@@ -18,6 +17,8 @@ class Auth {
     localStorage.removeItem("firstName");
     localStorage.removeItem("lastName");
     localStorage.removeItem("userId");
+    localStorage.removeItem("jobDescription");
+    localStorage.removeItem("imageSrc");
   }
 
   isAuthenticated() {

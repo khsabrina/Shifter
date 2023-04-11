@@ -20,7 +20,7 @@ function Input(): JSX.Element {
         const mesaage = await userLogin(data);
         if (auth.isAuthenticated() === true) {
             // auth.logout();
-            navigate('/home');
+            navigate('/calendar');
         }
         else {
             toast.error(mesaage, {
