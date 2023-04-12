@@ -95,7 +95,7 @@ function Layout(props: LayoutProps): JSX.Element {
       <aside className="SideBar">
         <SideBar />
       </aside>
-      <div className="Calendar"><props.component /></div>
+      <div className="layout-component"><props.component /></div>
     </div>
   );
 }

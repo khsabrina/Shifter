@@ -1,7 +1,6 @@
 import auth from "../Components/auth/auth";
 
-// const URL = "https://django-server-production-293f.up.railway.app/shifter/";
-const URL = "http://127.0.0.1:8000/shifter/";
+const URL = "https://django-server-production-293f.up.railway.app/shifter/";
 
 // Helper POST Method
 const methodGet = () => {

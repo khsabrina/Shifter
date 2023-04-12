@@ -3,13 +3,12 @@
 }
 
 .calendar-container {
-    height: 80vh;
+    height: 79vh;
     border: 1px solid black;
     border-radius: 10px;
-    box-sizing: border-box;
-    overflow: hidden;
+    /* box-sizing: border-box; */
+    /* overflow: hidden; */
     background-color: #f0f0f0;
-    width: 95%;
 }
 
 .select-menu {
@@ -28,4 +27,38 @@
 
 .rbc-allday-cell {
     display: none;
+}
+
+
+.tool-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    height: fit-content;
+}
+
+.react-datepicker__input-container {
+    height: 100%;
+}
+
+.react-datepicker-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+.date-picker-wrapper {
+    height: fit-content;
+}
+
+.select-menu-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.label-left {
+    display: block;
+    margin-right: 1rem;
+    /* Adjust this margin to your preference */
 }

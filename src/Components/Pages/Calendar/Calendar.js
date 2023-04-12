@@ -109,23 +109,29 @@ class MyCalendar extends Component {
         }
         const defaultSelectedOptions = selectedTitles.map(title => ({ value: title, label: title, color: titleColorMap[title] }));
         return (
-            <div className="calendar" style={{ position: 'relative' }}>
-                <label htmlFor="select-menu">Select employees:</label>
-                <Select
-                    options={groupedOptions}
-                    isMulti
-                    onChange={this.handleChange}
-                    className="select-menu"
-                    classNamePrefix="select"
-                    styles={colorStyles}
-                    value={defaultSelectedOptions}
-                />
-                <DatePicker
-                    selected={selectedDay}
-                    onChange={this.handleDateChange}
-                    className="date-picker"
-                    dateFormat="MM/dd/yyyy"
-                />
+            <div className="calendar">
+                <div className="tool-bar">
+                    <div className="select-menu-wrapper" >
+                        <label htmlFor="select-menu" className="label-left">Select employees:</label>
+                        <Select
+                            options={groupedOptions}
+                            isMulti
+                            onChange={this.handleChange}
+                            className="select-menu"
+                            classNamePrefix="select"
+                            styles={colorStyles}
+                            value={defaultSelectedOptions}
+                        />
+                    </div>
+                    <div className="date-picker-wrapper">
+                        <DatePicker
+                            selected={selectedDay}
+                            onChange={this.handleDateChange}
+                            className="date-picker"
+                            dateFormat="MM/dd/yyyy"
+                        />
+                    </div>
+                </div>
                 <Calendar
                     localizer={localizer}
                     events={events.filter(event => selectedTitles.includes(event.title))}

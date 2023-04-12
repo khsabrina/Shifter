@@ -3,10 +3,8 @@
     height: 100%;
     box-sizing: border-box;
     display: grid;
-    /* background-color: rgb(215, 215, 242); */
-    /* background-image: url("../../LoginArea/Login/background.jpg"); */
     background-image: url("./backgroud.jpg");
-    grid-template-columns: 11% 89%;
+    grid-template-columns: 14% 86%;
     grid-template-rows: 10% 85%;
     text-align: -webkit-center;
 }
@@ -18,7 +16,6 @@
     height: 98%;
     border: solid;
     border-color: thistle;
-    /* border: 1px rgb(43, 32, 32); */
     grid-column-start: 1;
     grid-column-end: 2;
     background-color: white;
@@ -45,12 +42,13 @@
     /* grid-column-end: 3; */
 }
 
-.Calendar {
+.layout-component {
     display: table;
     height: 30%;
     border: 1px white;
-    width: 100%;
+    width: 98%;
     grid-column-start: 2;
     grid-row-start: 2;
-    grid-column-end: 5;
+    /* grid-row-end: 2;
+    grid-column-end: 2; */
 }
