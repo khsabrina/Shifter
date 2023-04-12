@@ -11,17 +11,17 @@ import { useEffect } from "react";
 import auth from "./Components/auth/auth";
 
 export default function App() {
-  useEffect(() => {
-    function handleBeforeUnload() {
-      auth.logout();
-    }
+  // useEffect(() => {
+  //   function handleBeforeUnload() {
+  //     auth.logout();
+  //   }
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
+  //   window.addEventListener('beforeunload', handleBeforeUnload);
 
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, []);
+  //   return () => {
+  //     window.removeEventListener('beforeunload', handleBeforeUnload);
+  //   };
+  // }, []);
   return (
     <BrowserRouter>
       <Routes>

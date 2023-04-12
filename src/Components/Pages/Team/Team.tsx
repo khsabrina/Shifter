@@ -44,7 +44,7 @@ const data = [
 const Team = () => {
 
   const [teamlist, setTeamlist] = useState<Row[]>([]);
-  const [rows, setRows] = useState(teamlist);
+  const [rows, setRows] = useState<Row[]>(teamlist);
   const [name, setName] = useState('');
   const [jobDescription, setJobDescription] = useState('');
   const [team, setTeam] = useState('');
@@ -63,8 +63,6 @@ const Team = () => {
   const [jobDescriptionSearch, setJobDescriptionSearch] = useState('');
   const [teamSearch, setTeamSearch] = useState('');
   const [nameList, setNameList] = useState([]);
-  const [jobDescriptionList, setJobDescriptionList] = useState([]);
-  const [teamsList, setTeamList] = useState([]);
 
   useEffect(() => {
     async function fetchData() {
@@ -98,7 +96,6 @@ const Team = () => {
       setTeamlist(items);
       setRows(items);
       setNameList(names);
-      setTeamList(teams);
       setJobDescription(jobDescriptions)
     }
     fetchData()
@@ -141,6 +138,8 @@ const Team = () => {
 
   const handleDeleteRow = (id: number) => {
     setRows((prevRows) => prevRows.filter((row) => row.id !== id));
+    const deleteRow: Row[] = teamlist.filter((team) => team.id !== id);
+    setTeamlist(deleteRow);
   };
 
   const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -186,6 +185,11 @@ const Team = () => {
         ...prevRows,
         {id: Date.now(),imageSrc,name,jobDescription,team},
       ]);
+      setTeamlist((prevTeamlist) => [
+        ...prevTeamlist,
+        {id: Date.now(),imageSrc,name,jobDescription,team},
+      ]);
+      
     } 
     setDialogOpen(false);
   };
@@ -193,16 +197,28 @@ const Team = () => {
 
   const FilterBy = (rows: Row[], teamSearch: string, jobDescriptionSearch: string, nameSearch: string) => {
     return rows.filter((row) => {
-      if (teamSearch === "" && nameSearch === "" && row.jobDescription === jobDescriptionSearch) {
+      if (jobDescriptionSearch === "" && teamSearch === "" && nameSearch === "") {
         return true;
       }
-      if (jobDescriptionSearch === "" && row.team === teamSearch) {
+      if (jobDescriptionSearch === "" && teamSearch === "" && nameSearch === row.name) {
         return true;
       }
-      if (jobDescriptionSearch === row.jobDescription && row.team === teamSearch) {
+      if (jobDescriptionSearch === "" && teamSearch === row.team && nameSearch === "") {
         return true;
       }
-      if (jobDescriptionSearch === "" && teamSearch === "") {
+      if (jobDescriptionSearch === "" && teamSearch === row.team && nameSearch === row.name) {
+        return true;
+      }
+      if (jobDescriptionSearch === row.jobDescription && teamSearch === "" && nameSearch === row.name) {
+        return true;
+      }
+      if (jobDescriptionSearch === row.jobDescription && teamSearch === row.team && nameSearch === "") {
+        return true;
+      }
+      if (jobDescriptionSearch === row.jobDescription && teamSearch === "" && nameSearch === "") {
+        return true;
+      }
+      if (jobDescriptionSearch === row.jobDescription && teamSearch === row.team && nameSearch === row.name) {
         return true;
       }
       return false;
@@ -216,17 +232,19 @@ const Team = () => {
   return (
     <>
     <div className="custom-line">
-    <Box sx={{ backgroundColor: '#FFFFFF', p: 0 , maxWidth: 'fit-content'}}>
-      <TextField
+    <Box sx={{ backgroundColor: '#FFFFFF', p: 1, borderRadius: 4, width: '88%', display: 'flex', alignItems: 'center' }}>
+      <Box sx={{alignItems: 'self-end', border: '1px solid black', borderRadius: 4, p: 1, display: 'flex' ,minWidth: 'max-content', flex: 1 }}>
+        <TextField
           label="Name Search"
           value={nameSearch}
           onChange={(e) => setNameSearch(e.target.value)}
           variant="outlined"
           InputLabelProps={{ style: { fontSize: 12 } }}
           inputProps={{ style: { fontSize: 12 } }}          
-          sx={{ py: 0, fontSize: 12 }} size="small"
+          sx={{ py: 0, fontSize: 12, mr: 1 ,minWidth: 'max-content'}}
+          size="small"
         />
-        <FormControl variant="outlined" sx={{ mr: 2 ,minWidth: 120, py: 0}}  size="small">
+        <FormControl variant="outlined" sx={{ mr: 1, minWidth: 120 }} size="small">
           <InputLabel id="team-select-label" sx={{ fontSize: 12 }}>Team</InputLabel>
           <Select
             labelId="team-select-label"
@@ -234,13 +252,13 @@ const Team = () => {
             onChange={(e) => setTeamSearch(e.target.value as string)}
             label="Team"
             size="small"
-            sx={{ p: 0, fontSize: 12 }}
+            sx={{ p: 0, fontSize: 12 ,minWidth: 'max-content'}}
           >
             <MenuItem value="">None</MenuItem>
-            {teamlist.map((row) => (<MenuItem value={row.team}>{row.team}</MenuItem>))}
+            {Array.from(new Set(teamlist.map((row) => row.team))).map((team) => (<MenuItem value={team}>{team}</MenuItem>))}
           </Select>
         </FormControl>
-        <FormControl variant="outlined" sx={{ mr: 2 ,minWidth: 200, py: 0}} size="small">
+        <FormControl variant="outlined" sx={{ minWidth: 200 }} size="small">
           <InputLabel id="job-description-select-label" sx={{ fontSize: 12 }}>Job Description</InputLabel>
           <Select
             labelId="job-description-select-label"
@@ -248,14 +266,20 @@ const Team = () => {
             onChange={(e) => setJobDescriptionSearch(e.target.value as string)}
             label="Job Description"
             size="small"
-            sx={{ p: 0, fontSize: 12 }}
+            sx={{ p: 0, fontSize: 12 ,minWidth: 'max-content' }}
           >
             <MenuItem value="">None</MenuItem>
-            {teamlist.map((row) => (<MenuItem value={row.jobDescription}>{row.jobDescription}</MenuItem>))}
+            {Array.from(new Set(teamlist.map((row) => row.jobDescription))).map((jobDescription) => (<MenuItem value={jobDescription}>{jobDescription}</MenuItem>))}
           </Select>
         </FormControl>
-        <button onClick={handleSearch}>Search</button>
+        <Button onClick={handleSearch}>Search</Button>
+      </Box>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', flex: 1 }}>
+        <Button onClick={handleAddRow} color="primary">Add</Button>
+      </Box>
     </Box>
+
+
       <Box borderRadius={8} overflow="hidden" width="90%" position="relative" height="450px">
         <TableContainer component={Paper} style={{ maxHeight: 450, overflow: 'auto', minHeight: 450, width: '100%' }}>
           <Table width="100%">
@@ -267,8 +291,7 @@ const Team = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {FilterBy(teamlist, teamSearch, jobDescriptionSearch, nameSearch)
-                .map((row) => (
+              {rows.map((row) => (
                   <TableRow key={row.id}>
                     <TableCell style={{ display: 'flex', justifyContent: 'center' }}>
                       <UserCircle imageSrc={row.imageSrc} />
