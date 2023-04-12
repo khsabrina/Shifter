@@ -3,19 +3,21 @@ import UserPic from "./UserCircle/NoPhotoUser.png"
 import {TeamInfo} from "../../../actions/apiActions"
 import "./Team.css"
 import React, { ChangeEvent, useEffect, useState } from 'react';
-import {MenuItem,Checkbox,Box,Table,TableBody,TableCell,TableContainer,TableHead,TableRow,Paper,Switch, FormControlLabel
+import {Autocomplete,MenuItem,Checkbox,Box,Table,TableBody,TableCell,TableContainer,TableHead,TableRow,Paper,Switch, FormControlLabel
 ,IconButton,Dialog,DialogTitle,DialogContent,DialogContentText,DialogActions,TextField, Button, FormControl, InputLabel, Select,
 } from '@mui/material';
-import { Delete as DeleteIcon, Edit as EditIcon, Email } from '@mui/icons-material';
+import { Delete as DeleteIcon, Edit as EditIcon, Email, Rowing } from '@mui/icons-material';
 import UserCircle from "./UserCircle/UserCircle";
 import { alignProperty } from "@mui/material/styles/cssUtils";
 import SearchBar from './SearchBar/SearchBar'
+import { range } from "lodash";
 
 
 interface Row {
   id: number;
   imageSrc: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   jobDescription: string;
   team: string;
 }
@@ -45,7 +47,8 @@ const Team = () => {
 
   const [teamlist, setTeamlist] = useState<Row[]>([]);
   const [rows, setRows] = useState<Row[]>(teamlist);
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [jobDescription, setJobDescription] = useState('');
   const [team, setTeam] = useState('');
   const [email, setEmail] = useState('');
@@ -59,10 +62,12 @@ const Team = () => {
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
   const [dialogMode, setDialogMode] = useState<'add' | 'edit'>('add');
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [nameSearch, setNameSearch] = useState('');
+  const [firstNameSearch, setFirstNameSearch] = useState('');
+  const [lastNameSearch, setLastNameSearch] = useState('');
   const [jobDescriptionSearch, setJobDescriptionSearch] = useState('');
   const [teamSearch, setTeamSearch] = useState('');
-  const [nameList, setNameList] = useState([]);
+  const [showSearch, setshowSearch] = useState([firstNameSearch,lastNameSearch,jobDescriptionSearch,teamSearch]);
+
 
   useEffect(() => {
     async function fetchData() {
@@ -72,44 +77,18 @@ const Team = () => {
           ...item,
           id: index + 1,
           imageSrc: UserPic,
-          name: item.name + " " + item.lastName,
-        };
-      });
-      const names = result.employee.map((item, index) => {
-        return {
-          id: index + 1,
-          name: item.name + " " + item.name,
-        };
-      });
-      const teams = result.employee.map((item, index) => {
-        return {
-          id: index + 1,
-          team: item.team,
-        };
-      });
-      const jobDescriptions = result.employee.map((item, index) => {
-        return {
-          id: index + 1,
-          jobDescription: item.jobDescription,
         };
       });
       setTeamlist(items);
       setRows(items);
-      setNameList(names);
-      setJobDescription(jobDescriptions)
     }
     fetchData()
   }, []);
 
   useEffect(() => {
-    const filteredRows = teamlist.filter((row) =>
-      (filterJobDescription === 'All' || row.jobDescription === filterJobDescription) &&
-      (searchText === '' || row.name.toLowerCase().includes(searchText.toLowerCase()))
-    );
+    const filteredRows = FilterBy(teamlist, teamSearch, jobDescriptionSearch, firstNameSearch, lastNameSearch);
     setRows(filteredRows);
-    setSelectedRows([]);
-  }, [teamlist, filterJobDescription, searchText]);
-
+  }, [teamlist, teamSearch, jobDescriptionSearch, firstNameSearch, lastNameSearch]);
   const handleSwitchChange = () => {
     setIsManager(!isManager);
     // onRoleChange(event.target.checked);
@@ -121,7 +100,8 @@ const Team = () => {
 
   const handleAddRow = () => {
     setDialogMode('add');
-    setName('');
+    setFirstName('');
+    setLastName('');
     setJobDescription('');
     setimageSrc(UserPic)
     setDialogOpen(true);
@@ -129,7 +109,8 @@ const Team = () => {
 
   const handleEditRow = (row: typeof teamlist[0]) => {
     setDialogMode('edit');
-    setName(row.name);
+    setFirstName(row.firstName);
+    setLastName(row.lastName);
     setJobDescription(row.jobDescription);
     setSelectedRowId(row.id);
     setimageSrc(row.imageSrc);
@@ -159,8 +140,11 @@ const Team = () => {
     setTeam(event.target.value);
   };
   
-  const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setName(event.target.value);
+  const handleFirstNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setFirstName(event.target.value);
+  };
+  const handleLastNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setLastName(event.target.value);
   };
   const handleDialogClose = () => {
     setDialogOpen(false);
@@ -183,11 +167,11 @@ const Team = () => {
     if (dialogMode === 'add') {
       setRows((prevRows) => [
         ...prevRows,
-        {id: Date.now(),imageSrc,name,jobDescription,team},
+        {id: Date.now(),imageSrc,firstName,lastName,jobDescription,team},
       ]);
       setTeamlist((prevTeamlist) => [
         ...prevTeamlist,
-        {id: Date.now(),imageSrc,name,jobDescription,team},
+        {id: Date.now(),imageSrc,firstName,lastName,jobDescription,team},
       ]);
       
     } 
@@ -195,56 +179,107 @@ const Team = () => {
   };
 
 
-  const FilterBy = (rows: Row[], teamSearch: string, jobDescriptionSearch: string, nameSearch: string) => {
+  const FilterBy = (rows: Row[], teamSearch: string, jobDescriptionSearch: string, firstNameSearch: string, lastNameSearch: string) => {
     return rows.filter((row) => {
-      if (jobDescriptionSearch === "" && teamSearch === "" && nameSearch === "") {
-        return true;
-      }
-      if (jobDescriptionSearch === "" && teamSearch === "" && nameSearch === row.name) {
-        return true;
-      }
-      if (jobDescriptionSearch === "" && teamSearch === row.team && nameSearch === "") {
-        return true;
-      }
-      if (jobDescriptionSearch === "" && teamSearch === row.team && nameSearch === row.name) {
-        return true;
-      }
-      if (jobDescriptionSearch === row.jobDescription && teamSearch === "" && nameSearch === row.name) {
-        return true;
-      }
-      if (jobDescriptionSearch === row.jobDescription && teamSearch === row.team && nameSearch === "") {
-        return true;
-      }
-      if (jobDescriptionSearch === row.jobDescription && teamSearch === "" && nameSearch === "") {
-        return true;
-      }
-      if (jobDescriptionSearch === row.jobDescription && teamSearch === row.team && nameSearch === row.name) {
-        return true;
-      }
-      return false;
+      const matchFirstName = firstNameSearch === '' || firstNameSearch === row.firstName;
+      const matchLastName = lastNameSearch === '' || lastNameSearch === row.lastName;
+      const matchTeam = teamSearch === '' || teamSearch === row.team;
+      const matchJobDescription = jobDescriptionSearch === '' || jobDescriptionSearch === row.jobDescription;
+      return matchFirstName && matchLastName && matchTeam && matchJobDescription;
     });
   };
   const handleSearch = () => {
-    const filteredRows = FilterBy(teamlist, teamSearch, jobDescriptionSearch,nameSearch);
+    const filteredRows = FilterBy(teamlist, teamSearch, jobDescriptionSearch,firstNameSearch,lastNameSearch);
     setRows(filteredRows);
   };
+
+  const ChangeSearch = (valueSearch: string ,subjectSearch: number ) =>{
+    if (subjectSearch === 0) {setFirstNameSearch(valueSearch)}
+    if (subjectSearch === 1) {setLastNameSearch(valueSearch)}
+    if (subjectSearch === 2) {setJobDescriptionSearch(valueSearch)}
+    if (subjectSearch === 3) {setTeamSearch(valueSearch)}
+    setshowSearch((prev) => prev.map((search, i) => (i === subjectSearch ? valueSearch ?? '' : search)))
+    const filteredRows = FilterBy(teamlist, teamSearch, jobDescriptionSearch,firstNameSearch,lastNameSearch);
+    // setRows(filteredRows);
+    // // handleSearch()
+  }
+  const makeArray =(subjectSearch: number)=>{
+    if (subjectSearch === 0) {return Array.from(new Set(rows.map((row) => row.firstName))).map((firstName) => firstName)}
+    if (subjectSearch === 1) {return Array.from(new Set(rows.map((row) => row.lastName))).map((lastName) => lastName)}
+    if (subjectSearch === 2) {return Array.from(new Set(rows.map((row) => row.jobDescription))).map((jobDescription) => jobDescription)}
+    if (subjectSearch === 3) {return Array.from(new Set(rows.map((row) => row.team))).map((team) => team)}
+    return Array.from(new Set(rows.map((row) => row.team))).map((team) => team)}
+
+  const makeLabel =(subjectSearch: number)=>{
+    if (subjectSearch === 0) {return "First Name"}
+    if (subjectSearch === 1) {return "LastName"}
+    if (subjectSearch === 2) {return "Job Description"}
+    if (subjectSearch === 3) {return "Team"}
+    return "bla"}
 
   return (
     <>
     <div className="custom-line">
+    
     <Box sx={{ backgroundColor: '#FFFFFF', p: 1, borderRadius: 4, width: '88%', display: 'flex', alignItems: 'center' }}>
       <Box sx={{alignItems: 'self-end', border: '1px solid black', borderRadius: 4, p: 1, display: 'flex' ,minWidth: 'max-content', flex: 1 }}>
-        <TextField
-          label="Name Search"
-          value={nameSearch}
-          onChange={(e) => setNameSearch(e.target.value)}
+      <TextField >Search</TextField>
+        {/* <TextField
+          label="First Name"
+          value={firstNameSearch}
+          onChange={(e) => setFirstNameSearch(e.target.value)}
           variant="outlined"
           InputLabelProps={{ style: { fontSize: 12 } }}
           inputProps={{ style: { fontSize: 12 } }}          
           sx={{ py: 0, fontSize: 12, mr: 1 ,minWidth: 'max-content'}}
           size="small"
+        /> */}
+      {range(4).map((index) => (
+      <Autocomplete sx={{ mr: 1, minWidth: 'max-content', fontSize:12 }} style= {{ fontSize: 12 }}
+      id={"country-select-demo" + index}
+      value={showSearch[index]}
+      inputValue={showSearch[index]}
+      onInputChange={(event, newInputValue) => {
+        ChangeSearch(newInputValue, index);
+      }}
+      onChange={(event: any,value: string | null) => {  if (value) {ChangeSearch(value, index);
+      } else {ChangeSearch("", index);}}}
+      options = {makeArray(index)}
+      autoHighlight
+      getOptionLabel={(option: string) => option}
+      renderOption={
+        (props, option) => (
+        <Box style= {{ fontSize: 12 }} component="li" {...props}>
+          {option}
+        </Box>
+      )}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          label={makeLabel(index)}
+          size="small"
+          sx={{ py: 0, fontSize: 12, mr: 1 ,minWidth: 'max-content'}}
+          InputLabelProps={{ style: { fontSize: 12 } }}      
+          inputProps={ {  style: { fontSize: 12 } ,
+            ...params.inputProps,
+            autoComplete: 'new-password', // disable autocomplete and autofill
+          }}
+
         />
-        <FormControl variant="outlined" sx={{ mr: 1, minWidth: 120 }} size="small">
+      )}
+    />))}
+    
+        {/* <TextField
+          label="Last Name"
+          value={lastNameSearch}
+          onChange={(e) => setLastNameSearch(e.target.value)}
+          variant="outlined"
+          InputLabelProps={{ style: { fontSize: 12 } }}
+          inputProps={{ style: { fontSize: 12 } }}          
+          sx={{ py: 0, fontSize: 12, mr: 1 ,minWidth: 'max-content'}}
+          size="small"
+        /> */}
+        {/* <FormControl variant="outlined" sx={{ mr: 1, minWidth: 120 }} size="small">
           <InputLabel id="team-select-label" sx={{ fontSize: 12 }}>Team</InputLabel>
           <Select
             labelId="team-select-label"
@@ -271,8 +306,7 @@ const Team = () => {
             <MenuItem value="">None</MenuItem>
             {Array.from(new Set(teamlist.map((row) => row.jobDescription))).map((jobDescription) => (<MenuItem value={jobDescription}>{jobDescription}</MenuItem>))}
           </Select>
-        </FormControl>
-        <Button onClick={handleSearch}>Search</Button>
+        </FormControl> */}
       </Box>
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', flex: 1 }}>
         <Button onClick={handleAddRow} color="primary">Add</Button>
@@ -285,9 +319,12 @@ const Team = () => {
           <Table width="100%">
             <TableHead>
               <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>Job Description</TableCell>
-                <TableCell></TableCell>
+                <TableCell style={{ textAlign: 'center' }}></TableCell>
+                <TableCell style={{ textAlign: 'center' }}>First Name</TableCell>
+                <TableCell style={{ textAlign: 'center' }}>Last Name</TableCell>
+                <TableCell style={{ textAlign: 'center' }}>Job Description</TableCell>
+                <TableCell style={{ textAlign: 'center' }}>Team</TableCell>
+                <TableCell style={{ textAlign: 'center' }}></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -296,7 +333,8 @@ const Team = () => {
                     <TableCell style={{ display: 'flex', justifyContent: 'center' }}>
                       <UserCircle imageSrc={row.imageSrc} />
                     </TableCell>
-                    <TableCell style={{ textAlign: 'center' }}>{row.name}</TableCell>
+                    <TableCell style={{ textAlign: 'center' }}>{row.firstName}</TableCell>
+                    <TableCell style={{ textAlign: 'center' }}>{row.lastName}</TableCell>
                     <TableCell style={{ textAlign: 'center' }}>{row.jobDescription}</TableCell>
                     <TableCell style={{ textAlign: 'center' }}>{row.team}</TableCell>
                     <TableCell style={{ textAlign: 'center' }}>
@@ -315,16 +353,16 @@ const Team = () => {
       </Box>
       </div>
       {dialogOpen && <Dialog open={true} onClose={handleDialogClose}>
-        <DialogTitle>{dialogMode === 'add' ? 'Add Employee' : name }</DialogTitle>
+        <DialogTitle>{dialogMode === 'add' ? 'Add Employee' : `${firstName} ${lastName}`}</DialogTitle>
           <DialogContent>
-            <DialogContentText>{dialogMode === 'add' ? 'Enter the details for the new employee below' : name }</DialogContentText>
+            <DialogContentText>{dialogMode === 'add' ? 'Enter the details for the new employee below' :`${firstName} ${lastName}` }</DialogContentText>
             <TextField
-              autoFocus margin="dense" id="First Name" label="First Name" value={name}
-              fullWidth onChange={handleNameChange}
+              autoFocus margin="dense" id="First Name" label="First Name" value={firstName}
+              fullWidth onChange={handleFirstNameChange}
             />
             <TextField
-              autoFocus margin="dense" id="Last Name" label="Last Name" value={name}
-              fullWidth onChange={handleNameChange}
+              autoFocus margin="dense" id="Last Name" label="Last Name" value={lastName}
+              fullWidth onChange={handleLastNameChange}
             />
             <TextField margin="dense" 
               id="Mail Adrress" label="Mail Address" value={email} 
