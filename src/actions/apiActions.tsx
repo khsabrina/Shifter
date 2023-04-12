@@ -1,6 +1,7 @@
 import auth from "../Components/auth/auth";
 
-const URL = "https://django-server-production-293f.up.railway.app/shifter/";
+// const URL = "https://django-server-production-293f.up.railway.app/shifter/";
+const URL = "http://127.0.0.1:8000/shifter/";
 
 // Helper POST Method
 const methodGet = () => {
@@ -52,10 +53,20 @@ const userLogin = async (user: LoginForm) => {
   const data = await response.json();
   if (response.status === 200) {
     //data.??? depends on Yonatan backend
+    console.log(data);
     auth.login(data);
     return "work"
   }
   return data.message
+};
+
+const getUser = async () => {
+  const response = await fetch(`${URL}user/?token=${localStorage.getItem("token")}`, methodGet());
+  const data = await response.json();
+  if (response.status === 200) {
+    auth.setUser(data);
+    console.log(data);
+  }
 };
 
 const TeamInfo = async () => {
@@ -70,7 +81,8 @@ const TeamInfo = async () => {
 const GetTeamShifts = async (id: number, date: Date) => {
   let myUrl = `${URL}shifts/${id}/`;
   if (date) {
-    myUrl += `?date=${URL}`;
+    console.log(date);
+    myUrl += `?date=${date}`;
   }
   const response = await fetch(`${myUrl}`, methodGet());
   const data = await response.json();
@@ -206,7 +218,8 @@ const GetTeamShifts = async (id: number, date: Date) => {
 export {
   userLogin,
   TeamInfo,
-  GetTeamShifts
+  GetTeamShifts,
+  getUser,
   // userSignup,
   // fetchOrganizations,
   // fetchUsers,

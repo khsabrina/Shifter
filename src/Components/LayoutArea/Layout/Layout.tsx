@@ -2,9 +2,7 @@ import SideBar from "../SideBar/SideBar";
 import "./Layout.css";
 import UserCircle from "../UserCircle/UserCircle"
 import UserPic from '../UserCircle/NoPhotoUser.png'
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import auth from "../../auth/auth";
-import Login from "../../LoginArea/Login/Login";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
@@ -34,7 +32,6 @@ function Layout(props: LayoutProps): JSX.Element {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      console.log("asddsaa");
       navigate('/login');
     }
   }, [isAuthenticated, navigate]);

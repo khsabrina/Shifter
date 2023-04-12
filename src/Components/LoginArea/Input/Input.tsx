@@ -2,7 +2,7 @@ import "./Input.css";
 import { TextField, Button, ButtonGroup } from "@mui/material";
 import { Login } from "@mui/icons-material";
 import { useForm } from "react-hook-form";
-import { userLogin } from "../../../actions/apiActions";
+import { userLogin, getUser } from "../../../actions/apiActions";
 import { useNavigate } from "react-router-dom";
 import auth from "../../auth/auth";
 import { toast } from "react-toastify";
@@ -19,7 +19,7 @@ function Input(): JSX.Element {
     const onSubmit = async (data: LoginForm) => {
         const mesaage = await userLogin(data);
         if (auth.isAuthenticated() === true) {
-            // auth.logout();
+            await getUser();
             navigate('/calendar');
         }
         else {

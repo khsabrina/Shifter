@@ -5,6 +5,9 @@ class Auth {
 
   login(data: any) {
     localStorage.setItem("token", data.token);
+  }
+
+  setUser(data: any) {
     localStorage.setItem("firstName", data.name);
     localStorage.setItem("lastName", data.lastName);
     localStorage.setItem("userId", data.userId);

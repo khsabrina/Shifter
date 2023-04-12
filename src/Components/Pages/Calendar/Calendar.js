@@ -9,6 +9,7 @@ import Select from 'react-select';
 import swal from 'sweetalert';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { format } from 'date-fns'
 
 
 const localizer = momentLocalizer(moment);
@@ -64,7 +65,8 @@ class MyCalendar extends Component {
         const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
         this.setState({ selectedDay: date });
         if (daysDifference >= 75) {
-            this.getShiftsToDate(date);
+            let formatedDate = format(date, 'yyyy/mm/dd');
+            this.getShiftsToDate(formatedDate);
             this.setState({ lastDateGotShifts: date });
         }
     }
