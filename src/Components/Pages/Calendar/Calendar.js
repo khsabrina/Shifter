@@ -125,10 +125,15 @@ class MyCalendar extends Component {
                     </div>
                     <div className="date-picker-wrapper">
                         <DatePicker
+                            portalId="root-portal"
                             selected={selectedDay}
                             onChange={this.handleDateChange}
+                            showMonthDropdown
+                            showYearDropdown
+                            dropdownMode="select"
                             className="date-picker"
                             dateFormat="MM/dd/yyyy"
+                            placeholderText="Choose a date"
                         />
                     </div>
                 </div>
@@ -142,7 +147,10 @@ class MyCalendar extends Component {
                     eventPropGetter={this.eventStyleGetter} // apply custom styles to events
                     formats={{
                         timeGutterFormat: (date, culture, localizer) =>
-                            localizer.format(date, "HH:mm", culture)
+                            localizer.format(date, "HH:mm", culture),
+                        eventTimeRangeFormat: ({ start, end }, culture, localizer) =>
+                            localizer.format(start, "HH:mm", culture) + " - " +
+                            localizer.format(end, "HH:mm", culture)
                     }}
                     showCurrentTimeIndicator={false}
                     dayLayoutAlgorithm="no-overlap"

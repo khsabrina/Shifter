@@ -48,9 +48,9 @@
     height: 100%;
 }
 
-.date-picker-wrapper {
+/* .date-picker-wrapper {
     height: fit-content;
-}
+} */
 
 .select-menu-wrapper {
     display: flex;
