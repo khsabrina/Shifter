@@ -10,6 +10,8 @@ import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
 import Modal from 'react-modal';
 import { ChromePicker } from 'react-color';
 import "./Prioritizer.css";
+import Select from 'react-select';
+import DatePicker from "react-datepicker";
 
 const DragAndDropCalendar = withDragAndDrop(Calendar);
 const localizer = momentLocalizer(moment);
@@ -19,7 +21,8 @@ class Prioritizer extends Component {
         events: [],
         selectedEvent: null,
         showModal: false,
-        eventId: 0
+        eventId: 0,
+        counters: { item1: 0, item2: 0 }
     };
 
     async componentDidMount() {
@@ -72,6 +75,8 @@ class Prioritizer extends Component {
         };
         this.setState({ events: [...this.state.events, newEvent] });
     };
+
+    formatName = (name, count) => { return `${name} ID ${count}` }
 
     onSelectSlot = ({ start, end }) => {
         const newEvent = {
@@ -146,7 +151,7 @@ class Prioritizer extends Component {
 
 
     render() {
-        const { events, selectedEvent, showModal } = this.state;
+        const { events, selectedEvent, showModal, counters } = this.state;
         const DADCalendarFormats = {
             timeGutterFormat: (date, culture, localizer) =>
                 localizer.format(date, "HH:mm", culture),
@@ -154,56 +159,102 @@ class Prioritizer extends Component {
                 localizer.format(start, "HH:mm", culture) + " - " +
                 localizer.format(end, "HH:mm", culture)
         }
+        const colorStyles = {
+            option: (styles, { data }) => { return { ...styles, color: data.color } },
+            multiValue: (styles, { data }) => { return { ...styles, backgroundColor: data.color, color: "#fff" } },
+            multiValueRemove: (styles, { data }) => { return { ...styles, color: "#fff", cursor: 'pointer' } },
+            multiValueLabel: (styles, { data }) => { return { ...styles, color: "#fff" } },
+        }
         return (
-            <div className="testtest">
-                <DragAndDropCalendar
-                    localizer={localizer}
-                    dayLayoutAlgorithm="no-overlap"
-                    formats={DADCalendarFormats}
-                    defaultView="week"
-                    views={["day", "week"]}
-                    events={events}
-                    draggableAccessor="isDraggable"
-                    resizableAccessor="isResizable"
-                    onDropFromOutside={this.onDropFromOutside}
-                    eventPropGetter={this.eventStyleGetter}
-                    onEventDrop={this.onEventDrop}
-                    onEventResize={this.onEventResize}
-                    onSelectSlot={this.onSelectSlot}
-                    onSelectEvent={this.handleSelectEvent}
-                    resizable
-                    selectable
-                />
-                <Modal
-                    className='modal'
-                    isOpen={showModal}
-                    onRequestClose={() => this.setState({ showModal: false })}
-                    style={{
-                        content: {
-                            height: 'fit-content',
-                            width: 'fit-content',
-                            position: 'fixed',
-                            inset: 'unset',
-                            top: '50%',
-                            left: '50%',
-                        },
-                    }}
-                >
-                    {selectedEvent && (
-                        <div>
-                            <div style={{ marginBottom: '10px' }}>
-                                <input value={selectedEvent.title} onChange={this.handleTitleChange} />
-                            </div>
-                            <div className="color-picker-container" style={{ marginBottom: '10px' }}>
-                                <ChromePicker color={selectedEvent.color} onChange={this.handleColorChange} />
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <button onClick={this.handleDeleteEvent}>Delete</button>
-                                <button onClick={this.handleSaveChanges}>Save changes</button>
-                            </div>
+            <div className="dndwrapper" style={{ display: 'flex', flexDirection: 'column' }}>
+                <div className="tool-bar">
+                    <div className="date-picker-wrapper">
+                        <DatePicker
+                            portalId="root-portal"
+                            // selected={selectedDay}
+                            onChange={this.handleDateChange}
+                            showMonthDropdown
+                            showYearDropdown
+                            dropdownMode="select"
+                            className="date-picker"
+                            dateFormat="MM/dd/yyyy"
+                            placeholderText="Choose a date"
+                        />
+                    </div>
+                    <div className="select-menu-wrapper" >
+                        <label htmlFor="select-menu" className="label-left">Select employees:</label>
+                        <Select
+                            // options={groupedOptions}
+                            isMulti
+                            onChange={this.handleChange}
+                            className="select-menu"
+                            classNamePrefix="select"
+                            styles={colorStyles}
+                        // value={defaultSelectedOptions}
+                        />
+                    </div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'row' }}>
+                    <div className="dndcalendar">
+                        <DragAndDropCalendar
+                            localizer={localizer}
+                            dayLayoutAlgorithm="no-overlap"
+                            formats={DADCalendarFormats}
+                            defaultView="week"
+                            views={["day", "week"]}
+                            events={events}
+                            draggableAccessor="isDraggable"
+                            resizableAccessor="isResizable"
+                            onDropFromOutside={this.onDropFromOutside}
+                            eventPropGetter={this.eventStyleGetter}
+                            onEventDrop={this.onEventDrop}
+                            onEventResize={this.onEventResize}
+                            onSelectSlot={this.onSelectSlot}
+                            onSelectEvent={this.handleSelectEvent}
+                            resizable
+                            selectable
+                        />
+                        <Modal
+                            className='modal'
+                            isOpen={showModal}
+                            onRequestClose={() => this.setState({ showModal: false })}
+                            style={{
+                                content: {
+                                    height: 'fit-content',
+                                    width: 'fit-content',
+                                    position: 'fixed',
+                                    inset: 'unset',
+                                    top: '50%',
+                                    left: '50%',
+                                },
+                            }}
+                        >
+                            {selectedEvent && (
+                                <div>
+                                    <div style={{ marginBottom: '10px' }}>
+                                        <input value={selectedEvent.title} onChange={this.handleTitleChange} />
+                                    </div>
+                                    <div className="color-picker-container" style={{ marginBottom: '10px' }}>
+                                        <ChromePicker color={selectedEvent.color} onChange={this.handleColorChange} />
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <button onClick={this.handleDeleteEvent}>Delete</button>
+                                        <button onClick={this.handleSaveChanges}>Save changes</button>
+                                    </div>
+                                </div>
+                            )}
+                        </Modal>
+                    </div>
+                    <div className="new-div" style={{ flex: 1 }}>
+                        <div
+                            draggable="true"
+                        // onDragStart={() => handleDragStart('undroppable')}
+                        >
+                            Draggable but not for calendar.
                         </div>
-                    )}
-                </Modal>
+                    </div>
+                </div>
+                <button onClick={this.handleSaveChanges}>Save Changes</button>
             </div>
         );
     }
