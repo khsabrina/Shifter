@@ -48,7 +48,7 @@ const methodPatch = (data: any) => {
     headers: {
       "content-type": "application/json",
       Accept: "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`
+      Authorization: `Token ${localStorage.getItem("token")}`
     },
   };
 };
@@ -56,6 +56,12 @@ const methodPatch = (data: any) => {
 interface LoginForm {
   username: string;
   password: string;
+}
+
+interface Team {
+  company_id: string |null;
+  name: string;
+  manager : string |null;
 }
 
 
@@ -78,10 +84,20 @@ const getUser = async () => {
 };
 
 const TeamInfo = async () => {
-  const response = await fetch(`${URL}team/`, methodGet());
+  const response = await fetch(`${URL}team/team_id=${localStorage.getItem("teamId")}`, methodGet());
   const data = await response.json();
   if (response.status === 200) {
     return data
+  }
+};
+
+const CreateTeam = async (team : Team) => {
+  console.log(team)
+  const response = await fetch(`${URL}0/team/`, methodPost(team));
+  const data = await response.json();
+  if (response.status === 201) {
+    console.log("yay")
+    // auth.setUser(data);
   }
 };
 
@@ -232,6 +248,7 @@ export {
   TeamInfo,
   GetTeamShifts,
   getUser,
+  CreateTeam
   // userSignup,
   // fetchOrganizations,
   // fetchUsers,
