@@ -29,6 +29,17 @@ const methodPost = (data: any) => {
   };
 };
 
+const methodPostToLogin = (data: any) => {
+  return {
+    method: "POST",
+    body: JSON.stringify(data),
+    headers: {
+      "content-type": "application/json",
+      Accept: "application/json",
+    },
+  };
+};
+
 // Helper PATCH Method
 const methodPatch = (data: any) => {
   return {
@@ -49,13 +60,13 @@ interface LoginForm {
 
 
 const userLogin = async (user: LoginForm) => {
-  const response = await fetch(`${URL}token-auth/`, methodPost(user));
+  const response = await fetch(`${URL}token-auth/`, methodPostToLogin(user));
   const data = await response.json();
   if (response.status === 200) {
     auth.login(data);
     return "work"
   }
-  return data.message
+  return "incorrect username or password"
 };
 
 const getUser = async () => {
@@ -74,12 +85,16 @@ const TeamInfo = async () => {
   }
 };
 
+const GetTeamList = async () => {
+  const response = await fetch(`${URL}team/`, methodGet());
+}
 
-const GetTeamShifts = async (id: number, date: Date) => {
+
+const GetTeamShifts = async (date: Date) => {
   let myUrl = `${URL}${localStorage.getItem("companyId")}/shifts/?team_id=${localStorage.getItem("teamId")}`;
   if (date) {
     console.log(date);
-    myUrl += `?date=${date}`;
+    myUrl += `&date=${date}`;
   }
   const response = await fetch(`${myUrl}`, methodGet());
   const data = await response.json();
