@@ -1,7 +1,7 @@
 import auth from "../Components/auth/auth";
 
-const URL = "https://django-server-production-293f.up.railway.app/shifter/";
-// const URL = "http://127.0.0.1:8000/shifter/"
+// const URL = "https://django-server-production-293f.up.railway.app/shifter/";
+const URL = "http://127.0.0.1:8000/api/"
 
 // Helper POST Method
 const methodGet = () => {
@@ -10,7 +10,7 @@ const methodGet = () => {
     headers: {
       "content-type": "application/json",
       Accept: "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
+      Authorization: `Token ${localStorage.getItem("token")}`,
     },
   };
 };
@@ -49,11 +49,9 @@ interface LoginForm {
 
 
 const userLogin = async (user: LoginForm) => {
-  const response = await fetch(`${URL}user/`, methodPost(user));
+  const response = await fetch(`${URL}token-auth/`, methodPost(user));
   const data = await response.json();
   if (response.status === 200) {
-    //data.??? depends on Yonatan backend
-    console.log(data);
     auth.login(data);
     return "work"
   }
@@ -61,11 +59,10 @@ const userLogin = async (user: LoginForm) => {
 };
 
 const getUser = async () => {
-  const response = await fetch(`${URL}user/?token=${localStorage.getItem("token")}`, methodGet());
+  const response = await fetch(`${URL}0/employee/`, methodGet());
   const data = await response.json();
   if (response.status === 200) {
     auth.setUser(data);
-    console.log(data);
   }
 };
 
@@ -79,7 +76,7 @@ const TeamInfo = async () => {
 
 
 const GetTeamShifts = async (id: number, date: Date) => {
-  let myUrl = `${URL}shifts/${id}/`;
+  let myUrl = `${URL}${localStorage.getItem("companyId")}/shifts/?team_id=${localStorage.getItem("teamId")}`;
   if (date) {
     console.log(date);
     myUrl += `?date=${date}`;

@@ -8,11 +8,14 @@ class Auth {
   }
 
   setUser(data: any) {
-    localStorage.setItem("firstName", data.name);
-    localStorage.setItem("lastName", data.lastName);
-    localStorage.setItem("userId", data.userId);
-    localStorage.setItem("jobDescription", data.jobDescription);
-    localStorage.setItem("imageSrc", data.imageSrc);
+    console.log(data);
+    localStorage.setItem("firstName", data.first_name);
+    localStorage.setItem("lastName", data.last_name);
+    localStorage.setItem("userId", data.id);
+    // localStorage.setItem("jobDescription", data.jobDescription);
+    // localStorage.setItem("imageSrc", data.imageSrc);
+    localStorage.setItem("companyId", data.company_id);
+    localStorage.setItem("teamId", data.team_id);
   }
 
   logout() {

@@ -22,10 +22,14 @@ class Prioritizer extends Component {
         selectedEvent: null,
         showModal: false,
         eventId: 0,
-        counters: { item1: 0, item2: 0 }
+        shiftTemplate: [],
+        draggedEvent: {}
     };
 
     async componentDidMount() {
+        const shiftTemplate = [{ title: "morning", eventStartHour: "12:00", eventEndHour: "18:00", Id: 0, amount: 5 }];
+        this.setState({ shiftTemplate });
+
         const userEvents = await GetTeamShifts(0);
         const events = userEvents.shifts.flatMap(shift => {
             const { color, title, start, end } = shift;
@@ -40,6 +44,7 @@ class Prioritizer extends Component {
             }));
         });
         this.setState({ events });
+        // const userTemplates = await GetTemplates(0);
     }
 
     eventStyleGetter = event => {
@@ -65,18 +70,36 @@ class Prioritizer extends Component {
     };
 
     onDropFromOutside = ({ start, end, allDay, ...rest }) => {
+        const { eventStartHour, eventEndHour, title } = this.state.draggedEvent;
+        const startHour = eventStartHour.split(':')[0];
+        const startMinute = eventStartHour.split(':')[1];
+        const endHour = eventEndHour.split(':')[0];
+        const endMinute = eventEndHour.split(':')[1];
+
+        const newStart = moment(start)
+            .hour(parseInt(startHour))
+            .minute(parseInt(startMinute))
+            .toDate();
+
+        const newEnd = moment(end)
+            .hour(parseInt(endHour))
+            .minute(parseInt(endMinute))
+            .toDate();
+
         const newEvent = {
-            start,
-            end,
+            title: title,
+            start: newStart,
+            end: newEnd,
+            amount: 0,
             allDay,
             ...rest,
             isDraggable: true,
-            isResizable: true
+            isResizable: true,
+            id: this.state.eventId++
         };
+
         this.setState({ events: [...this.state.events, newEvent] });
     };
-
-    formatName = (name, count) => { return `${name} ID ${count}` }
 
     onSelectSlot = ({ start, end }) => {
         const newEvent = {
@@ -86,6 +109,7 @@ class Prioritizer extends Component {
             color: "#2ecc71",
             isDraggable: true,
             isResizable: true,
+            amount: 0,
             id: this.state.eventId++
         };
         this.setState({
@@ -124,6 +148,16 @@ class Prioritizer extends Component {
         });
     };
 
+    handleAmountChange = event => {
+        const { selectedEvent } = this.state;
+        this.setState({
+            selectedEvent: {
+                ...selectedEvent,
+                amount: event.target.value,
+            }
+        });
+    }
+
     handleDeleteEvent = () => {
         const { selectedEvent, events } = this.state;
         const updatedEvents = events.filter(event => event.id !== selectedEvent.id);
@@ -149,9 +183,13 @@ class Prioritizer extends Component {
         })
     }
 
+    handleDragStart = (dragEvent) => {
+        this.setState({ draggedEvent: dragEvent })
+    }
+
 
     render() {
-        const { events, selectedEvent, showModal, counters } = this.state;
+        const { events, selectedEvent, showModal, shiftTemplate } = this.state;
         const DADCalendarFormats = {
             timeGutterFormat: (date, culture, localizer) =>
                 localizer.format(date, "HH:mm", culture),
@@ -182,7 +220,7 @@ class Prioritizer extends Component {
                         />
                     </div>
                     <div className="select-menu-wrapper" >
-                        <label htmlFor="select-menu" className="label-left">Select employees:</label>
+                        <label htmlFor="select-menu" className="label-left">Select team:</label>
                         <Select
                             // options={groupedOptions}
                             isMulti
@@ -237,6 +275,14 @@ class Prioritizer extends Component {
                                     <div className="color-picker-container" style={{ marginBottom: '10px' }}>
                                         <ChromePicker color={selectedEvent.color} onChange={this.handleColorChange} />
                                     </div>
+                                    <div style={{ marginBottom: '10px' }}>
+                                        <input
+                                            type="number" // Change the input type to "number"
+                                            value={selectedEvent.amount.toString()} // Convert amount to string
+                                            onChange={this.handleAmountChange}
+                                            placeholder="Enter amount"
+                                        />
+                                    </div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                         <button onClick={this.handleDeleteEvent}>Delete</button>
                                         <button onClick={this.handleSaveChanges}>Save changes</button>
@@ -245,13 +291,21 @@ class Prioritizer extends Component {
                             )}
                         </Modal>
                     </div>
-                    <div className="new-div" style={{ flex: 1 }}>
-                        <div
-                            draggable="true"
-                        // onDragStart={() => handleDragStart('undroppable')}
-                        >
-                            Draggable but not for calendar.
-                        </div>
+                    <div className="template-wrapper" style={{ flex: 1 }}>
+                        <h2>Templates</h2>
+                        {shiftTemplate.map(template => (
+                            <div
+                                className="template-item"
+                                draggable="true"
+                                key={template.title}
+                                id={template.id}
+                                onDragStart={() =>
+                                    this.handleDragStart(template)
+                                }
+                            >
+                                {template.title}
+                            </div>
+                        ))}
                     </div>
                 </div>
                 <button onClick={this.handleSaveChanges}>Save Changes</button>

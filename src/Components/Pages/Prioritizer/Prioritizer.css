@@ -10,3 +10,23 @@
     height: 79vh;
     background-color: #f0f0f0;
 }
+
+.template-item {
+    background-color: #f2f2f2;
+    border: 1px solid #000000;
+    border-radius: 4px;
+    padding: 8px;
+    margin-bottom: 8px;
+    cursor: move;
+    width: 70%;
+}
+
+.template-wrapper {
+    background-color: #f2f2f2;
+    border: 1px solid #000000;
+    border-radius: 4px;
+    padding: 8px;
+    margin-bottom: 8px;
+    margin-left: 8px;
+    margin-right: 8px;
+}
