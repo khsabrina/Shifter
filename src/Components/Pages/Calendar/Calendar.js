@@ -27,7 +27,7 @@ class MyCalendar extends Component {
     };
 
     async componentDidMount() {
-        const userEvents = await GetTeamShifts(0);
+        const userEvents = await GetTeamShifts();
         const events = userEvents.shifts.flatMap(shift => {
             const { color, title, start, end } = shift;
             if (title === localStorage.getItem("firstName")) {
@@ -72,7 +72,7 @@ class MyCalendar extends Component {
     }
 
     async getShiftsToDate(date) {
-        const userEvents = await GetTeamShifts(0, date);
+        const userEvents = await GetTeamShifts(date);
         const events = userEvents.shifts.flatMap(shift => {
             const { color, title, start, end } = shift;
             if (title === localStorage.getItem("firstName")) {

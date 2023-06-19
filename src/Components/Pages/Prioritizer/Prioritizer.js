@@ -12,6 +12,7 @@ import { ChromePicker } from 'react-color';
 import "./Prioritizer.css";
 import Select from 'react-select';
 import DatePicker from "react-datepicker";
+import { format } from 'date-fns'
 
 const DragAndDropCalendar = withDragAndDrop(Calendar);
 const localizer = momentLocalizer(moment);
@@ -21,13 +22,16 @@ class Prioritizer extends Component {
         events: [],
         selectedEvent: null,
         showModal: false,
+        selectedTemplate: null,
+        showTemplateModal: false,
         eventId: 0,
         shiftTemplate: [],
+        selectedDay: new Date(),
         draggedEvent: {}
     };
 
     async componentDidMount() {
-        const shiftTemplate = [{ title: "morning", eventStartHour: "12:00", eventEndHour: "18:00", Id: 0, amount: 5 }];
+        const shiftTemplate = [{ title: "morning", eventStartHour: "12:00", eventEndHour: "18:00", id: 0, amount: 5, color: "#DCC224" }];
         this.setState({ shiftTemplate });
 
         const userEvents = await GetTeamShifts(0);
@@ -70,7 +74,7 @@ class Prioritizer extends Component {
     };
 
     onDropFromOutside = ({ start, end, allDay, ...rest }) => {
-        const { eventStartHour, eventEndHour, title } = this.state.draggedEvent;
+        const { eventStartHour, eventEndHour, title, color } = this.state.draggedEvent;
         const startHour = eventStartHour.split(':')[0];
         const startMinute = eventStartHour.split(':')[1];
         const endHour = eventEndHour.split(':')[0];
@@ -90,6 +94,7 @@ class Prioritizer extends Component {
             title: title,
             start: newStart,
             end: newEnd,
+            color: color,
             amount: 0,
             allDay,
             ...rest,
@@ -158,6 +163,18 @@ class Prioritizer extends Component {
         });
     }
 
+    handleDateChange = (date) => {
+        const timeDifference = Math.abs(this.state.selectedDay.getTime() - date.getTime());
+
+        const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
+        this.setState({ selectedDay: date });
+        if (daysDifference >= 75) {
+            let formatedDate = format(date, 'yyyy/mm/dd');
+            this.getShiftsToDate(formatedDate);
+            this.setState({ lastDateGotShifts: date });
+        }
+    }
+
     handleDeleteEvent = () => {
         const { selectedEvent, events } = this.state;
         const updatedEvents = events.filter(event => event.id !== selectedEvent.id);
@@ -189,7 +206,7 @@ class Prioritizer extends Component {
 
 
     render() {
-        const { events, selectedEvent, showModal, shiftTemplate } = this.state;
+        const { events, selectedEvent, showModal, shiftTemplate, selectedDay } = this.state;
         const DADCalendarFormats = {
             timeGutterFormat: (date, culture, localizer) =>
                 localizer.format(date, "HH:mm", culture),
@@ -209,7 +226,7 @@ class Prioritizer extends Component {
                     <div className="date-picker-wrapper">
                         <DatePicker
                             portalId="root-portal"
-                            // selected={selectedDay}
+                            selected={selectedDay}
                             onChange={this.handleDateChange}
                             showMonthDropdown
                             showYearDropdown
@@ -251,6 +268,8 @@ class Prioritizer extends Component {
                             onSelectEvent={this.handleSelectEvent}
                             resizable
                             selectable
+                            date={selectedDay}
+                            onNavigate={date => { this.handleDateChange(date); }}
                         />
                         <Modal
                             className='modal'
@@ -292,20 +311,27 @@ class Prioritizer extends Component {
                         </Modal>
                     </div>
                     <div className="template-wrapper" style={{ flex: 1 }}>
-                        <h2>Templates</h2>
-                        {shiftTemplate.map(template => (
-                            <div
-                                className="template-item"
-                                draggable="true"
-                                key={template.title}
-                                id={template.id}
-                                onDragStart={() =>
-                                    this.handleDragStart(template)
-                                }
-                            >
-                                {template.title}
+                        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                            <h2>Templates</h2>
+                            <div style={{ flex: '90%', overflowY: 'auto' }}>
+                                {shiftTemplate.map(template => (
+                                    <div
+                                        className="template-item"
+                                        draggable="true"
+                                        key={template.title}
+                                        id={template.id}
+                                        title={template.title}
+                                        onDragStart={() => this.handleDragStart(template)}
+                                        style={{ backgroundColor: template.color }}
+                                    >
+                                        {template.title}
+                                    </div>
+                                ))}
                             </div>
-                        ))}
+                            <div style={{ flex: '10%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                <button>Create Template</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <button onClick={this.handleSaveChanges}>Save Changes</button>
@@ -315,6 +341,7 @@ class Prioritizer extends Component {
 }
 
 function MainPrioritizer() {
+    // TODO: if the user is not admin - new screen
     return <Layout PageName="Prioritizer" component={Prioritizer} />;
 }
 

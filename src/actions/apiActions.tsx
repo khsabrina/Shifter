@@ -3,21 +3,9 @@ import auth from "../Components/auth/auth";
 // const URL = "https://django-server-production-293f.up.railway.app/shifter/";
 const URL = "http://127.0.0.1:8000/api/"
 
-// Helper POST Method
-const methodGet = () => {
+const methodGetWithData = (data: any) => {
   return {
-    method: "GET",
-    headers: {
-      "content-type": "application/json",
-      Accept: "application/json",
-      Authorization: `Token ${localStorage.getItem("token")}`,
-    },
-  };
-};
-
-const methodGetWithData = (data : any) => {
-  return {
-    method: "GET",
+    method: "PUT",
     body: JSON.stringify(data),
     headers: {
       "content-type": "application/json",
@@ -70,9 +58,9 @@ interface LoginForm {
 }
 
 interface Team {
-  company_id: string |null;
+  company_id: string | null;
   name: string;
-  manager : string |null;
+  manager: string | null;
 }
 
 
@@ -87,7 +75,7 @@ const userLogin = async (user: LoginForm) => {
 };
 
 const getUser = async () => {
-  const response = await fetch(`${URL}0/employee/`, methodGet());
+  const response = await fetch(`${URL}0/employee/`, methodGetWithData({ "key": "value" }));
   const data = await response.json();
   if (response.status === 200) {
     auth.setUser(data);
@@ -96,7 +84,7 @@ const getUser = async () => {
 
 const TeamInfo = async () => {
   console.log(localStorage.getItem("companyId"));
-  const response = await fetch(`${URL}${localStorage.getItem("companyId")}/teamemp/?${{team_ids : localStorage.getItem("companyId")}.toString()}`, methodGet());
+  const response = await fetch(`${URL}${localStorage.getItem("companyId")}/teamemp/?${{ team_ids: localStorage.getItem("companyId") }.toString()}`, methodGetWithData({}));
   const data = await response.json();
   console.log(data)
   if (response.status === 200) {
@@ -105,7 +93,7 @@ const TeamInfo = async () => {
   }
 };
 
-const CreateTeam = async (team : Team) => {
+const CreateTeam = async (team: Team) => {
   console.log(team)
   const response = await fetch(`${URL}0/team/`, methodPost(team));
   const data = await response.json();
@@ -116,7 +104,7 @@ const CreateTeam = async (team : Team) => {
 };
 
 const GetTeamList = async () => {
-  const response = await fetch(`${URL}team/`, methodGet());
+  const response = await fetch(`${URL}team/`, methodGetWithData({}));
 }
 
 
@@ -127,7 +115,7 @@ const GetTeamShifts = async (date: Date) => {
     console.log(date);
     myUrl += `&date=${date}`;
   }
-  const response = await fetch(`${myUrl}`, methodGet());
+  const response = await fetch(`${myUrl}`, methodGetWithData({}));
   const data = await response.json();
   if (response.status === 200) {
     return data;
