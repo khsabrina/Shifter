@@ -15,6 +15,17 @@ const methodGet = () => {
   };
 };
 
+const methodGetWithData = (data : any) => {
+  return {
+    method: "GET",
+    body: JSON.stringify(data),
+    headers: {
+      "content-type": "application/json",
+      Accept: "application/json",
+      Authorization: `Token ${localStorage.getItem("token")}`,
+    },
+  };
+};
 
 // Helper POST Method
 const methodPost = (data: any) => {
@@ -24,7 +35,7 @@ const methodPost = (data: any) => {
     headers: {
       "content-type": "application/json",
       Accept: "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`
+      Authorization: `Token ${localStorage.getItem("token")}`
     },
   };
 };
@@ -84,10 +95,13 @@ const getUser = async () => {
 };
 
 const TeamInfo = async () => {
-  const response = await fetch(`${URL}team/team_id=${localStorage.getItem("teamId")}`, methodGet());
+  console.log(localStorage.getItem("companyId"));
+  const response = await fetch(`${URL}${localStorage.getItem("companyId")}/teamemp/?${{team_ids : localStorage.getItem("companyId")}.toString()}`, methodGet());
   const data = await response.json();
+  console.log(data)
   if (response.status === 200) {
     return data
+
   }
 };
 
@@ -109,6 +123,7 @@ const GetTeamList = async () => {
 const GetTeamShifts = async (date: Date) => {
   let myUrl = `${URL}${localStorage.getItem("companyId")}/shifts/?team_id=${localStorage.getItem("teamId")}`;
   if (date) {
+    console.log("eheee")
     console.log(date);
     myUrl += `&date=${date}`;
   }

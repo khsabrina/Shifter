@@ -16,6 +16,11 @@ class Auth {
     // localStorage.setItem("imageSrc", data.imageSrc);
     localStorage.setItem("companyId", data.company_id);
     localStorage.setItem("teamId", data.team_id);
+    if (data.team_ids == null){
+      localStorage.setItem("teamIds", data.team_id);
+    }else{
+      localStorage.setItem("teamIds", data.team_ids);
+    }
   }
 
   logout() {
