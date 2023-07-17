@@ -1,12 +1,12 @@
 import Layout from "../../LayoutArea/Layout/Layout";
 import UserPic from "./UserCircle/NoPhotoUser.png"
-import {TeamInfo, getUser, CreateTeam} from "../../../actions/apiActions"
+import {TeamInfo, getUser, CreateTeam, getTeam, getRole, getAllUserTeam, CreateRole, getAllRoles, CreateUser} from "../../../actions/apiActions"
 import "./Team.css"
-import React, { ChangeEvent, useEffect, useState } from 'react';
+import React, { ChangeEvent, ReactNode, useEffect, useState } from 'react';
 import {Typography,Autocomplete,MenuItem,Checkbox,Box,Table,TableBody,TableCell,TableContainer,TableHead,TableRow,Paper,Switch, FormControlLabel
-,IconButton,Dialog,DialogTitle,DialogContent,DialogContentText,DialogActions,TextField, Button, FormControl, InputLabel, Select, Grid, Menu,
+,IconButton,Dialog,DialogTitle,DialogContent,DialogContentText,DialogActions,TextField, Button, FormControl, InputLabel, Select, Grid, Menu, SelectChangeEvent, MenuItemProps,
 } from '@mui/material';
-import { Delete as DeleteIcon, Edit as EditIcon, Email, Rowing } from '@mui/icons-material';
+import { Delete as DeleteIcon, Edit as EditIcon, Email, Rowing, Rule } from '@mui/icons-material';
 import UserCircle from "./UserCircle/UserCircle";
 import { alignProperty } from "@mui/material/styles/cssUtils";
 import SearchBar from './SearchBar/SearchBar'
@@ -45,16 +45,27 @@ const data = [
 ];
 
 interface Team {
-  company_id: string | null;
+  id: string
+  company_id: string;
   name: string;
-  manager : string | null
+  manager : string;
+}
+
+interface Role {
+  id: string
+  name: string;
+  description : string;
+  company_id: string;
 }
 
 
 const Team = () => {
 
-  const [teamlist, setTeamlist] = useState<Row[]>([]);
-  const [rows, setRows] = useState<Row[]>(teamlist);
+  const [userList, setuserList] = useState<Row[]>([]);
+  const [teamList, setTeamList] = useState<Team[]>([]);
+  const [RoleList, setRoleList] = useState<Role[]>([]);
+
+  const [rows, setRows] = useState<Row[]>(userList);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [jobDescription, setJobDescription] = useState('');
@@ -73,53 +84,88 @@ const Team = () => {
   const [showSearch, setshowSearch] = useState([firstNameSearch,lastNameSearch,jobDescriptionSearch,teamSearch]);
   const [anchorAdd, setAnchorAdd] = useState(null); // State for anchor element of the menu
   const [NewTeamOpen, setNewTeamOpen] = useState(false);
+  const [NewJobDescriptionOpen, setNewJobDescriptionOpen] = useState(false);
+
   const [AddNewTeamName, SetAddNewTeamName] = useState("");
+  const [AddNewJobDescriptionName, SetAddNewJobDescriptionName] = useState("");
+
   const [NewTeamSelectedEmployees, SetNewTeamSelectedEmployees] = useState<string[]>([]);
+
+  const [firstNameChange, setFirstNameChange] = useState('');
+  const [lastNameChange, setLastNameChange] = useState('');
+  const [jobDescriptionChange, setJobDescriptionChange] = useState<string>('');
+  const [teamChange, setTeamChange] = useState<string>('');
+  const [emailChange, setEmailChange] = useState<string>('');
+  const [passwordChange, setPasswordChange] = useState('');
 
   
 
-
   useEffect(() => {
+    console.log(rows);
+  }, [rows]);
+  
+  useEffect(() => {
+    let isMounted = true;
+  
     async function fetchData() {
-      const result = await TeamInfo();
-      console.log(result)
-      const items = result.map((item) => {
-        return {
-          id: item.id,
-          firstName: item.first_name,
-          lastName: item.last_name,
-          team: item.team_id,
-          // ...item,
-          imageSrc: UserPic,
-        };
-      });
-      setTeamlist(items);
-      setRows(items);
+      try {
+        const [result, teamListResult, roleListResult] = await Promise.all([
+          TeamInfo(),
+          getAllUserTeam(),
+          getAllRoles(),
+        ]);
+  
+        const Tlist = teamListResult.reduce((acc, team) => {
+          if (team.name !== "") {
+            acc[team.id] = team;
+          }
+          return acc;
+        }, []);
+  
+        const Rlist = roleListResult.reduce((acc, role) => {
+          if (role.name !== "") {
+            acc[role.id] = role;
+          }
+          return acc;
+        }, []);
+  
+        if (isMounted) {
+          setTeamList(Tlist);
+          setRoleList(Rlist)
+          const items = await Promise.all(
+            result.map(async (item) => {
+              return {
+                id: item.id,
+                firstName: item.first_name,
+                lastName: item.last_name,
+                team: Tlist[item.team_id].name,
+                jobDescription: Rlist[item.role_id].name,
+                imageSrc: UserPic,
+              };
+            })
+          );
+  
+          setuserList(items);
+          console.log("here4444444");
+          setRows(items);
+        }
+      } catch (error) {
+        // Handle error if any
+      }
     }
-    fetchData()
+  
+    fetchData(); // Fetch data when the component mounts
+  
+    return () => {
+      isMounted = false;
+    };
   }, []);
-
-
-  // useEffect(() => {
-  //   async function fetchData() {
-  //     const result = await TeamInfo();
-  //     console.log(result)
-  //     const items = result.map((item) => {
-  //       return {
-  //         ...item,
-  //         imageSrc: UserPic,
-  //       };
-  //     });
-  //     setTeamlist(items);
-  //     setRows(items);
-  //   }
-  //   fetchData()
-  // }, []);
+  
 
   useEffect(() => {
-    const filteredRows = FilterBy(teamlist, teamSearch, jobDescriptionSearch, firstNameSearch, lastNameSearch);
+    const filteredRows = FilterBy(userList, teamSearch, jobDescriptionSearch, firstNameSearch, lastNameSearch);
     setRows(filteredRows);
-  }, [teamlist, teamSearch, jobDescriptionSearch, firstNameSearch, lastNameSearch]);
+  }, [userList, teamSearch, jobDescriptionSearch, firstNameSearch, lastNameSearch]);
     const handleSwitchChange = () => {
       setIsManager(!isManager);
     // onRoleChange(event.target.checked);
@@ -139,24 +185,50 @@ const Team = () => {
       );
     }
   };
+  const handleNewJobDescriptionOpen = () => {
+    setNewJobDescriptionOpen(true);
+    handleMenuAddClose();
+
+  };
+
   const handleNewTeamOpen = () => {
     setNewTeamOpen(true);
     handleMenuAddClose();
 
   };
-  const onTeamCreate = async (data: Team) => {
+  const onTeamCreate = async (data: {}) => {
       if (auth.isAuthenticated() === true) {
         await CreateTeam(data);
       }
   };
 
+  const onUserCreate = async (data: {}) => {
+    if (auth.isAuthenticated() === true) {
+      await CreateUser(data);
+    }
+};
+
+  const onJobDescriptionCreate = async (data: {}) => {
+    if (auth.isAuthenticated() === true) {
+      await CreateRole(data);
+    }
+};
+
   const handleNewTeamClose = () => {
     setNewTeamOpen(false);
   };
+
+  const handleNewJobDescriptionClose = () => {
+    setNewJobDescriptionOpen(false);
+  };
   const handleCreateNewTeamClose = () => {
-    const newTeam : Team = {company_id: localStorage.getItem("companyId"), name: AddNewTeamName, manager: localStorage.getItem("userId")}
-    onTeamCreate(newTeam);
+    onTeamCreate({"company_id": localStorage.getItem("companyId"), "name": AddNewTeamName, "manager": localStorage.getItem("userId")});
     handleNewTeamClose()
+  };
+
+  const handleCreateNewJobDescriptionClose = () => {
+    onJobDescriptionCreate({"company_id": localStorage.getItem("companyId"), "name": AddNewJobDescriptionName});
+    handleNewJobDescriptionClose()
   };
 
   const handleMenuAddOpen = (event) => {
@@ -167,11 +239,6 @@ const Team = () => {
     setAnchorAdd(null);
   };
 
-  const handleOptionAddClick = (option) => {
-    // Handle option click logic
-    console.log('Selected Option:', option);
-    handleMenuAddClose();
-  };
 
   const handleAddNewEmployee = () => {
     setDialogMode('add');
@@ -183,7 +250,7 @@ const Team = () => {
     handleMenuAddClose();
   };
 
-  const handleEditRow = (row: typeof teamlist[0]) => {
+  const handleEditRow = (row: typeof userList[0]) => {
     setDialogMode('edit');
     setFirstName(row.firstName);
     setLastName(row.lastName);
@@ -195,32 +262,58 @@ const Team = () => {
 
   const handleDeleteRow = (id: number) => {
     setRows((prevRows) => prevRows.filter((row) => row.id !== id));
-    const deleteRow: Row[] = teamlist.filter((team) => team.id !== id);
-    setTeamlist(deleteRow);
+    const deleteRow: Row[] = userList.filter((team) => team.id !== id);
+    setuserList(deleteRow);
   };
 
   const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(event.target.value);
+    setPasswordChange(event.target.value);
   };
 
   const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(event.target.value);
+    setEmailChange(event.target.value as string);
   };
 
-  const handleJobDescriptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setJobDescription(event.target.value);
+  const handleJobDescriptionChange = (event: SelectChangeEvent<string>, child: ReactNode) => {
+    setJobDescriptionChange(event.target.value as string);
+  };
+
+  // const handleTeamChange = (event: SelectChangeEvent<string>, child: ReactNode) => {
+  //   const selectedValue = event.target.value as string;
+  //   setTeamChange(selectedValue);
+  
+  //   // Find the selected team by its ID
+  //   const selectedTeam = teamList.find((team) => team.team_id.toString() === selectedValue);
+  
+  //   if (selectedTeam) {
+  //     // Store the selected team's ID
+  //     setTeam(selectedTeam.name);
+  //   }
+  // };
+
+ const handleTeamChange = (event: SelectChangeEvent<string>, child: ReactNode) => {
+    setTeamChange(event.target.value as string);
   };
 
   
-  const handleTeamChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    setTeam(event.target.value);
-  };
+// const handleTeamChange = (event: SelectChangeEvent<{ value: string }>) => {
+//   const selectedValue = event.target.value as string;
+//   const selectedTeam = teamList.find(
+//     (team) => team.team_id.toString() === selectedValue
+//   );
+//   setTeamChange(selectedValue);
+
+//   if (selectedTeam) {
+//     setTeam(selectedTeam.name);
+//   }
+// };
+
   
   const handleFirstNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setFirstName(event.target.value);
+    setFirstNameChange(event.target.value);
   };
   const handleLastNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setLastName(event.target.value);
+    setLastNameChange(event.target.value);
   };
   const handleDialogClose = () => {
     setDialogOpen(false);
@@ -244,6 +337,7 @@ const Team = () => {
   //     await CreateTeam(data);
   //   }
   // };
+
   const handleSaveRow = () => {
     if (dialogMode === 'add') {
       // const handleCreateNewTeamClose = () => {
@@ -251,12 +345,20 @@ const Team = () => {
       //   onNewUserCreate(newUser);
       //   handleNewTeamClose()
       // };
+      if (isManager){
+        onUserCreate({"company_id": localStorage.getItem("companyId"), "username": emailChange, "first_name": firstNameChange, 
+        "last_name": lastNameChange, "password" : passwordChange, "team_id":teamChange,"role_id":jobDescriptionChange});
+      }
+      else {
+        onUserCreate({"company_id": localStorage.getItem("companyId"), "username": emailChange, "first_name": firstNameChange, 
+        "last_name": lastNameChange, "password" : passwordChange, "team_id":teamChange,"role_id":jobDescriptionChange ,"is_admin" : "false"});
+      }
       setRows((prevRows) => [
         ...prevRows,
         {id: Date.now(),imageSrc,firstName,lastName,jobDescription,team},
       ]);
-      setTeamlist((prevTeamlist) => [
-        ...prevTeamlist,
+      setuserList((prevuserList) => [
+        ...prevuserList,
         {id: Date.now(),imageSrc,firstName,lastName,jobDescription,team},
       ]);
       
@@ -275,12 +377,16 @@ const Team = () => {
     });
   };
   const handleSearch = () => {
-    const filteredRows = FilterBy(teamlist, teamSearch, jobDescriptionSearch,firstNameSearch,lastNameSearch);
+    const filteredRows = FilterBy(userList, teamSearch, jobDescriptionSearch,firstNameSearch,lastNameSearch);
     setRows(filteredRows);
   };
 
   const HandleAddNewTeamName = (event: React.ChangeEvent<HTMLInputElement>) => {
     SetAddNewTeamName(event.target.value)
+  }
+
+  const HandleAddNewJobDescriptionName = (event: React.ChangeEvent<HTMLInputElement>) => {
+    SetAddNewJobDescriptionName(event.target.value)
   }
 
 
@@ -290,7 +396,7 @@ const Team = () => {
     if (subjectSearch === 2) {setJobDescriptionSearch(valueSearch)}
     if (subjectSearch === 3) {setTeamSearch(valueSearch)}
     setshowSearch((prev) => prev.map((search, i) => (i === subjectSearch ? valueSearch ?? '' : search)))
-    const filteredRows = FilterBy(teamlist, teamSearch, jobDescriptionSearch,firstNameSearch,lastNameSearch);
+    const filteredRows = FilterBy(userList, teamSearch, jobDescriptionSearch,firstNameSearch,lastNameSearch);
     // setRows(filteredRows);
     // // handleSearch()
   }
@@ -352,44 +458,6 @@ const Team = () => {
           )}
         />))}
     
-        {/* <TextField
-          label="Last Name"
-          value={lastNameSearch}
-          onChange={(e) => setLastNameSearch(e.target.value)}
-          variant="outlined"
-          InputLabelProps={{ style: { fontSize: 12 } }}
-          inputProps={{ style: { fontSize: 12 } }}          
-          sx={{ py: 0, fontSize: 12, mr: 1 ,minWidth: 'max-content'}}
-          size="small"
-        /> */}
-        {/* <FormControl variant="outlined" sx={{ mr: 1, minWidth: 120 }} size="small">
-          <InputLabel id="team-select-label" sx={{ fontSize: 12 }}>Team</InputLabel>
-          <Select
-            labelId="team-select-label"
-            value={teamSearch}
-            onChange={(e) => setTeamSearch(e.target.value as string)}
-            label="Team"
-            size="small"
-            sx={{ p: 0, fontSize: 12 ,minWidth: 'max-content'}}
-          >
-            <MenuItem value="">None</MenuItem>
-            {Array.from(new Set(teamlist.map((row) => row.team))).map((team) => (<MenuItem value={team}>{team}</MenuItem>))}
-          </Select>
-        </FormControl>
-        <FormControl variant="outlined" sx={{ minWidth: 200 }} size="small">
-          <InputLabel id="job-description-select-label" sx={{ fontSize: 12 }}>Job Description</InputLabel>
-          <Select
-            labelId="job-description-select-label"
-            value={jobDescriptionSearch}
-            onChange={(e) => setJobDescriptionSearch(e.target.value as string)}
-            label="Job Description"
-            size="small"
-            sx={{ p: 0, fontSize: 12 ,minWidth: 'max-content' }}
-          >
-            <MenuItem value="">None</MenuItem>
-            {Array.from(new Set(teamlist.map((row) => row.jobDescription))).map((jobDescription) => (<MenuItem value={jobDescription}>{jobDescription}</MenuItem>))}
-          </Select>
-        </FormControl> */}
       </Box>
     </Grid>
     
@@ -403,7 +471,7 @@ const Team = () => {
         </Button> */}
         <Menu anchorEl={anchorAdd} open={Boolean(anchorAdd)} onClose={handleMenuAddClose}>
           <MenuItem onClick={() => handleNewTeamOpen()}>New Team</MenuItem>
-          <MenuItem onClick={() => handleOptionAddClick('New Job Description')}>New Job Description</MenuItem>
+          <MenuItem onClick={() => handleNewJobDescriptionOpen()}>New Job Description</MenuItem>
           <MenuItem onClick={() => handleAddNewEmployee()}>New Employee</MenuItem>
         </Menu>
       </Box>
@@ -460,11 +528,11 @@ const Team = () => {
           <br />
           <br />
           <div>
-          {teamlist.length > 0 ? (
+          {userList.length > 0 ? (
             <>
               <p>Choose employees to add to the team:</p>
               {Array.from(
-                new Set(teamlist.map((row) => `${row.firstName} ${row.lastName}`))
+                new Set(userList.map((row) => `${row.firstName} ${row.lastName}`))
               ).map((team) => (
                 <FormControlLabel
                   control={
@@ -492,31 +560,102 @@ const Team = () => {
         </DialogActions>
       </Dialog>}
 
+      {/* add Job dialog */}
+    {<Dialog open={NewJobDescriptionOpen} onClose={handleNewJobDescriptionClose}>
+        <DialogTitle>Create Job</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus margin="dense" id="JobDescription Name" label="JobDescription Name" value={AddNewJobDescriptionName} 
+            fullWidth onChange={HandleAddNewJobDescriptionName}
+          />
+          <br />
+          <br />
+          <div>
+          {userList.length > 0 ? (
+            <>
+              <p>Choose employees to add to the team:</p>
+              {Array.from(
+                new Set(userList.map((row) => `${row.firstName} ${row.lastName}`))
+              ).map((team) => (
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      value={team}
+                      checked={NewTeamSelectedEmployees.includes(team)}
+                      onChange={handleEmployeeChange}
+                    />
+                  }
+                  label={team}
+                  key={team}
+                />
+              ))}
+                </>
+              ) : (<p>No employees available.</p>)}
+          </div>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCreateNewJobDescriptionClose} color="primary">
+            Create
+          </Button>
+          <Button onClick={handleNewJobDescriptionClose} color="primary">
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>}
+
     {/* add employee dialog */}
     {<Dialog open={dialogOpen} onClose={handleDialogClose}>
       <DialogTitle>{dialogMode === 'add' ? 'Add Employee' : `${firstName} ${lastName}`}</DialogTitle>
         <DialogContent>
           <DialogContentText>{dialogMode === 'add' ? 'Enter the details for the new employee below' :`${firstName} ${lastName}` }</DialogContentText>
           <TextField
-            autoFocus margin="dense" id="First Name" label="First Name" value={firstName}
+            autoFocus margin="dense" id="First Name" label="First Name" value={firstNameChange}
             fullWidth onChange={handleFirstNameChange}
           />
           <TextField
-            autoFocus margin="dense" id="Last Name" label="Last Name" value={lastName}
+            autoFocus margin="dense" id="Last Name" label="Last Name" value={lastNameChange}
             fullWidth onChange={handleLastNameChange}
           />
           <TextField margin="dense" 
-            id="Mail Adrress" label="Mail Address" value={email} 
+            id="Mail Adrress" label="Mail Address" value={emailChange} 
             fullWidth onChange={handleEmailChange}
             />
           <TextField margin="dense" 
-            id="Password" label="Password" value={password} 
+            id="Password" label="Password" value={passwordChange} 
             fullWidth onChange={handlePasswordChange}
             />
-          <TextField margin="dense" 
-            id="jobDescription" label="Job Description" value={jobDescription} 
-            fullWidth onChange={handleJobDescriptionChange}
-            />
+      <FormControl fullWidth margin="dense">
+        <InputLabel id="team-select-label">Team</InputLabel>
+        <Select
+          labelId="team-select-label"
+          id="team-select"
+          value={teamChange}
+          onChange={handleTeamChange}
+          label="Team"
+        >
+          {teamList.map((team) => (
+            <MenuItem value={team.id}>
+              {team.name}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+      <FormControl fullWidth margin="dense">
+        <InputLabel id="jobdescription-select-label">Job Description</InputLabel>
+        <Select
+          labelId="jobdescription-select-label"
+          id="jobdescription-select"
+          value={jobDescriptionChange}
+          onChange={handleJobDescriptionChange}
+          label="Team"
+        >
+        {RoleList.map((Role) => (
+          <MenuItem key={Role.id} value={Role.id}>
+            {Role.name}
+          </MenuItem>
+        ))}
+        </Select>
+      </FormControl>
         <div className="custom-row">
           <div className="switch-container" onClick={handleSwitchChange}>
             <div className={`switch ${isManager ? 'manager' : 'employee'}`}>
@@ -532,7 +671,7 @@ const Team = () => {
           label="Age"
           onChange={handleTeamChange}
         >
-          {Array.from(new Set(teamlist.map((row) => row.team))).map((team ,index) => (
+          {Array.from(new Set(userList.map((row) => row.team))).map((team ,index) => (
               <MenuItem value={team}>{team}</MenuItem>
           ))}
         </Select>
