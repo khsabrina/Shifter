@@ -14,7 +14,7 @@ import Prioritizer from "./Components/Pages/Prioritizer/Prioritizer";
 export default function App() {
   useEffect(() => {
     function handleBeforeUnload() {
-      // auth.logout();
+      auth.logout();
     }
 
     window.addEventListener('beforeunload', handleBeforeUnload);
