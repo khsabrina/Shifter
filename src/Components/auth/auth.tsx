@@ -12,13 +12,14 @@ class Auth {
     localStorage.setItem("firstName", data.first_name);
     localStorage.setItem("lastName", data.last_name);
     localStorage.setItem("userId", data.id);
+    localStorage.setItem("isAdmin", data.is_admin);
     // localStorage.setItem("jobDescription", data.jobDescription);
     // localStorage.setItem("imageSrc", data.imageSrc);
     localStorage.setItem("companyId", data.company_id);
     localStorage.setItem("teamId", data.team_id);
-    if (data.team_ids == null){
+    if (data.team_ids == null) {
       localStorage.setItem("teamIds", data.team_id);
-    }else{
+    } else {
       localStorage.setItem("teamIds", data.team_ids);
     }
   }

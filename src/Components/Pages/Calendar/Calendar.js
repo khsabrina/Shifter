@@ -4,7 +4,7 @@ import moment from "moment";
 import Layout from "../../LayoutArea/Layout/Layout";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "./Calendar.css";
-import { GetTeamShifts } from "../../../actions/apiActions";
+import { GetTeamAssignments } from "../../../actions/apiActions";
 import Select from 'react-select';
 import swal from 'sweetalert';
 import DatePicker from "react-datepicker";
@@ -27,8 +27,8 @@ class MyCalendar extends Component {
     };
 
     async componentDidMount() {
-        const userEvents = await GetTeamShifts();
-        const events = userEvents.shifts.flatMap(shift => {
+        const userEvents = await GetTeamAssignments();
+        const events = userEvents.flatMap(shift => {
             const { color, title, start, end } = shift;
             if (title === localStorage.getItem("firstName")) {
                 const selectedTitles = [title]
@@ -72,7 +72,7 @@ class MyCalendar extends Component {
     }
 
     async getShiftsToDate(date) {
-        const userEvents = await GetTeamShifts(date);
+        const userEvents = await GetTeamAssignments(date);
         const events = userEvents.shifts.flatMap(shift => {
             const { color, title, start, end } = shift;
             if (title === localStorage.getItem("firstName")) {

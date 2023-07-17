@@ -81,7 +81,7 @@ const getUser = async () => {
     auth.setUser(data);
   }
 };
-const getTeam = async (TeamId : String) => {
+const getTeam = async (TeamId: String) => {
   const response = await fetch(`${URL}${localStorage.getItem("companyId")}/team/?`, methodGetWithData({ "team_ids": [TeamId] }));
   const data = await response.json();
   if (response.status === 200) {
@@ -98,8 +98,8 @@ const getAllUserTeam = async () => {
   }
 };
 
-const getRole = async (RoleId : String) => {
-  const response = await fetch(`${URL}${localStorage.getItem("companyId")}/role/?`, methodGetWithData({RoleId}));
+const getRole = async (RoleId: String) => {
+  const response = await fetch(`${URL}${localStorage.getItem("companyId")}/role/?`, methodGetWithData({ RoleId }));
   const data = await response.json();
   if (response.status === 200) {
     return data
@@ -114,10 +114,8 @@ const getAllRoles = async () => {
   }
 };
 const TeamInfo = async () => {
-  console.log(localStorage.getItem("companyId"));
-  const response = await fetch(`${URL}${localStorage.getItem("companyId")}/teamemp/?`, methodGetWithData({ "team_ids": localStorage.getItem("teamIds")?.split(",")}));
+  const response = await fetch(`${URL}${localStorage.getItem("companyId")}/teamemp/?${{ team_ids: localStorage.getItem("companyId") }.toString()}`, methodGetWithData({}));
   const data = await response.json();
-  console.log(data)
   if (response.status === 200) {
     return data
 
@@ -155,17 +153,73 @@ const CreateRole = async (role: {}) => {
 };
 
 const GetTeamList = async () => {
-  const response = await fetch(`${URL}team/`, methodGetWithData({}));
+  let team_ids: string[] = []
+  let local_team_ids = localStorage.getItem("teamIds");
+  if (local_team_ids) {
+    team_ids = local_team_ids.split(',');
+  }
+  const response = await fetch(`${URL}${localStorage.getItem("companyId")}/team/`, methodGetWithData({ "team_ids": team_ids }));
+  if (response.status === 200) {
+    const data = await response.json();
+    return data;
+  }
+  return [];
+}
+
+const GetRoles = async () => {
+  const response = await fetch(`${URL}${localStorage.getItem("companyId")}/role/`, methodGetWithData({}));
+  if (response.status === 200) {
+    const data = await response.json();
+    return data;
+  }
+  return [];
 }
 
 
-const GetTeamShifts = async (date: Date) => {
-  let myUrl = `${URL}${localStorage.getItem("companyId")}/shifts/?team_id=${localStorage.getItem("teamId")}`;
-  if (date) {
-    console.log("eheee")
-    console.log(date);
-    myUrl += `&date=${date}`;
+const GetTeamAssignments = async (date: {}) => {
+  let myUrl = `${URL}${localStorage.getItem("companyId")}/assignments/?`;
+  let team_ids: string[] = []
+  let all_data: string[] = []
+  let local_team_ids = localStorage.getItem("teamIds");
+  if (local_team_ids) {
+    team_ids = local_team_ids.split(',');
   }
+  for (let i = 0; i < team_ids.length; i++) {
+    let updateUrl = myUrl + `&team_id=${team_ids[i]}`;
+    const response = await fetch(`${updateUrl}`, methodGetWithData(date));
+    if (response.status === 200) {
+      const data = await response.json();
+      if (data != "No team_id for ShiftsGet :(") {
+        all_data.push(data);
+      }
+    }
+  }
+  return all_data;
+};
+
+const GetTeamShifts = async (team_id: string, dates: {}) => {
+  let myUrl = `${URL}${localStorage.getItem("companyId")}/shifts/?team_id=${team_id}`;
+  const response = await fetch(`${myUrl}`, methodGetWithData(dates));
+  if (response.status === 201) {
+    const data = await response.json();
+    return data;
+  }
+  return [];
+}
+
+const CreateTeamShifts = async (team_id: string, shifts: {}) => {
+  let myUrl = `${URL}${localStorage.getItem("companyId")}/shifts/`;
+  const response = await fetch(`${myUrl}`, methodPost(shifts));
+  if (response.status === 200) {
+    const data = await response.json();
+    return data;
+  }
+  return [];
+}
+
+
+const GetTeamTemplate = async (team_id: string) => {
+  let myUrl = `${URL}${localStorage.getItem("companyId")}/shift-templates/?team_id=${team_id}`;
   const response = await fetch(`${myUrl}`, methodGetWithData({}));
   const data = await response.json();
   if (response.status === 200) {
@@ -173,6 +227,24 @@ const GetTeamShifts = async (date: Date) => {
   }
   return data.message
 };
+
+const GetAssignments = async (date: Date) => {
+  let team_ids: string[] = []
+  let all_data: string[] = []
+  let local_team_ids = localStorage.getItem("teamIds");
+  if (local_team_ids) {
+    team_ids = local_team_ids.split(',');
+  }
+  for (let i = 0; i < team_ids.length; i++) {
+    let myUrl = `${URL}${localStorage.getItem("companyId")}/assignments/?team_id=${team_ids[i]}`;
+    const response = await fetch(`${myUrl}`, methodGetWithData({}));
+    if (response.status === 200) {
+      const data = await response.json();
+      all_data.push(data);
+    }
+  }
+  return all_data;
+}
 
 
 // const userLogin = async (user: LoginForm) => {
@@ -300,7 +372,7 @@ const GetTeamShifts = async (date: Date) => {
 export {
   userLogin,
   TeamInfo,
-  GetTeamShifts,
+  GetTeamAssignments,
   getUser,
   CreateTeam,
   getTeam,
@@ -308,8 +380,13 @@ export {
   getAllUserTeam,
   CreateRole,
   getAllRoles,
-  CreateUser
-  
+  CreateUser,
+  GetAssignments,
+  GetTeamTemplate,
+  GetTeamList,
+  GetTeamShifts,
+  CreateTeamShifts,
+  GetRoles
   // userSignup,
   // fetchOrganizations,
   // fetchUsers,
