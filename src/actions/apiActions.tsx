@@ -114,11 +114,10 @@ const getAllRoles = async () => {
   }
 };
 const TeamInfo = async () => {
-  const response = await fetch(`${URL}${localStorage.getItem("companyId")}/teamemp/?${{ team_ids: localStorage.getItem("companyId") }.toString()}`, methodGetWithData({}));
+  const response = await fetch(`${URL}${localStorage.getItem("companyId")}/teamemp/?`, methodGetWithData({ "team_ids": localStorage.getItem("teamIds")?.split(",") }));
   const data = await response.json();
   if (response.status === 200) {
     return data
-
   }
 };
 
