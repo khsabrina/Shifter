@@ -3,7 +3,7 @@ import Layout from "../../LayoutArea/Layout/Layout";
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop'
 import { Calendar, momentLocalizer } from 'react-big-calendar'
 import "react-big-calendar/lib/css/react-big-calendar.css";
-import { GetTeamShifts, GetTeamTemplate, GetTeamList, CreateTeamShifts, GetRoles } from "../../../actions/apiActions";
+import { GetTeamShifts, GetTeamTemplate, GetTeamList, CreateTeamShifts, GetRoles, updateTemplate, deleteTemplate, CreateTemplate } from "../../../actions/apiActions";
 import moment from "moment";
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
@@ -12,7 +12,6 @@ import { ChromePicker } from 'react-color';
 import "./Prioritizer.css";
 import Select from 'react-select';
 import DatePicker from "react-datepicker";
-import { format } from 'date-fns'
 
 const DragAndDropCalendar = withDragAndDrop(Calendar);
 const localizer = momentLocalizer(moment);
@@ -49,6 +48,7 @@ class Prioritizer extends Component {
         selectedEvent: null,
         selectedTitles: {},
         showModal: false,
+        isPopupOpen: false,
         selectedTemplate: null,
         showTemplateModal: false,
         eventId: 0,
@@ -56,7 +56,7 @@ class Prioritizer extends Component {
         selectedDay: new Date(),
         draggedEvent: {},
         ShiftID: null,
-        roles: []
+        roles: [],
     };
 
 
@@ -68,9 +68,12 @@ class Prioritizer extends Component {
         const teams = await GetTeamList();
         const roles = await GetRoles();
         this.setState({ roles: roles });
+        this.setState({ teams: teams });
         if (0 < teams.length) {
             let options = { value: teams[0].id, label: teams[0].name }
             this.setState({ selectedTitles: options });
+            const template = await GetTeamTemplate(teams[0].id);
+            this.setState({ shiftTemplate: template });
             const userEvents = await GetTeamShifts(teams[0].id, {
                 "RangedDates":
                     { "StartDate": get_day_format(getSunday(selectedDay)), "EndDate": get_day_format(getSaturday(selectedDay)) }
@@ -82,17 +85,23 @@ class Prioritizer extends Component {
                 for (let i = 0; i < DailyShifts.length; i++) {
                     let date = DailyShifts[i].Date
                     let PossibleShifts = DailyShifts[i].PossibleShifts
-                    console.log(PossibleShifts)
                     for (let j = 0; j < PossibleShifts.length; j++) {
                         const newEvent = {
                             title: PossibleShifts[j].ShiftName,
                             start: this.parseDateTime(date, PossibleShifts[j].StartHour),
                             end: this.parseDateTime(date, PossibleShifts[j].EndHour),
-                            // color: color,
+                            Color: PossibleShifts[j].Color,
                             isDraggable: true,
                             isResizable: true,
-                            id: this.state.eventId++
+                            id: this.state.eventId++,
+                            rolesAmount: []
                         };
+                        for (let k = 0; k < PossibleShifts[j].NeededRoles.length; k++) {
+                            newEvent.rolesAmount.push({
+                                "roleId": PossibleShifts[j].NeededRoles[k].RoleID,
+                                "amount": PossibleShifts[j].NeededRoles[k].NeededWorkers
+                            })
+                        }
                         events.push(newEvent);
                     }
                 }
@@ -100,7 +109,6 @@ class Prioritizer extends Component {
                 this.setState({ shiftId: shiftId });
             }
         }
-        this.setState({ teams: teams });
     }
 
     parseDateTime = (date, hour) => {
@@ -131,10 +139,26 @@ class Prioritizer extends Component {
         return formattedDate;
     }
 
+    parseHour = (hour) => {
+        const hourString = hour.toString();
+        // Extract hour and minute from the hour string
+        let hourValue;
+        let minuteValue;
+
+        if (hourString.length === 3) {
+            hourValue = '0' + hourString.substring(0, 1);
+            minuteValue = hourString.substring(1, 3);
+        } else {
+            hourValue = hourString.substring(0, 2);
+            minuteValue = hourString.substring(2, 4);
+        }
+        return { hourValue: hourValue, minuteValue: minuteValue };
+    }
+
     eventStyleGetter = event => {
         return {
             style: {
-                backgroundColor: event.color,
+                backgroundColor: event.Color,
                 className: 'isDraggable isResizable'
             }
         };
@@ -154,11 +178,13 @@ class Prioritizer extends Component {
     };
 
     onDropFromOutside = ({ start, end, allDay, ...rest }) => {
-        const { eventStartHour, eventEndHour, title, color } = this.state.draggedEvent;
-        const startHour = eventStartHour.split(':')[0];
-        const startMinute = eventStartHour.split(':')[1];
-        const endHour = eventEndHour.split(':')[0];
-        const endMinute = eventEndHour.split(':')[1];
+        const { StartHour, EndHour, TemplateName, NeededRoles, Color } = this.state.draggedEvent;
+        const startDate = this.parseHour(StartHour)
+        const endDate = this.parseHour(EndHour)
+        const startHour = startDate.hourValue
+        const startMinute = startDate.minuteValue
+        const endHour = endDate.hourValue
+        const endMinute = endDate.minuteValue
 
         const newStart = moment(start)
             .hour(parseInt(startHour))
@@ -171,17 +197,23 @@ class Prioritizer extends Component {
             .toDate();
 
         const newEvent = {
-            title: title,
+            title: TemplateName,
             start: newStart,
             end: newEnd,
-            color: color,
-            amount: 0,
+            Color: Color,
             allDay,
             ...rest,
             isDraggable: true,
             isResizable: true,
-            id: this.state.eventId++
+            id: this.state.eventId++,
+            rolesAmount: []
         };
+        for (let k = 0; k < NeededRoles.length; k++) {
+            newEvent.rolesAmount.push({
+                "roleId": NeededRoles[k].RoleID,
+                "amount": NeededRoles[k].NeededWorkers
+            })
+        }
 
         this.setState({ events: [...this.state.events, newEvent] });
     };
@@ -190,8 +222,8 @@ class Prioritizer extends Component {
         const newEvent = {
             start,
             end,
-            title: "New Event",
-            color: "#2ecc71",
+            title: "New Shift",
+            Color: "#2ecc71",
             isDraggable: true,
             isResizable: true,
             // amount: 0,
@@ -214,6 +246,15 @@ class Prioritizer extends Component {
         this.setState({ events: updatedEvents });
     };
 
+    handleTitleTemplateChange = e => {
+        const { selectedTemplate } = this.state;
+        this.setState({
+            selectedTemplate: {
+                ...selectedTemplate,
+                TemplateName: e.target.value
+            }
+        });
+    };
     handleTitleChange = e => {
         const { selectedEvent } = this.state;
         this.setState({
@@ -224,22 +265,31 @@ class Prioritizer extends Component {
         });
     };
 
+    handleColorTemplateChange = color => {
+        const { selectedTemplate } = this.state;
+        this.setState({
+            selectedTemplate: {
+                ...selectedTemplate,
+                Color: color.hex
+            }
+        });
+    }
     handleColorChange = color => {
         const { selectedEvent } = this.state;
         this.setState({
             selectedEvent: {
                 ...selectedEvent,
-                color: color.hex
+                Color: color.hex
             }
         });
     };
 
     handleDateChange = (date) => {
         const selectedDate = this.state.selectedDay;
-        this.setState({ selectedDay: date });
         const isDifferentWeek = isDifferentWeeks(date, selectedDate);
+        this.setState({ selectedDay: date });
         if (isDifferentWeek) {
-            this.getShifts(this.state.selectedTitles);
+            this.getShifts(this.state.selectedTitles, date);
         }
     }
 
@@ -274,17 +324,53 @@ class Prioritizer extends Component {
 
     handleChange = (selectedOption) => {
         this.setState({ selectedTitles: selectedOption });
-        const userEvents = this.getShifts(selectedOption);
-
+        this.getTemplate(selectedOption.value)
+        this.getShifts(selectedOption, this.state.selectedDay);
     }
 
-    async getShifts(selectedOption) {
-        const { selectedDay } = this.state;
+    async getTemplate(teamId) {
+        const templates = await GetTeamTemplate(teamId)
+        this.setState({ shiftTemplate: templates })
+    }
+
+    async getShifts(selectedOption, selectedDay) {
+        this.setState({ events: [] });
+        this.setState({ shiftId: null });
         const userEvents = await GetTeamShifts(selectedOption.value, {
             "RangedDates": {
                 "StartDate": get_day_format(getSunday(selectedDay)), "EndDate": get_day_format(getSaturday(selectedDay))
             }
         });
+        if (userEvents.length > 0) {
+            const shiftId = userEvents[0].ShiftID;
+            const events = [];
+            let DailyShifts = userEvents[0].DailyShifts;
+            for (let i = 0; i < DailyShifts.length; i++) {
+                let date = DailyShifts[i].Date
+                let PossibleShifts = DailyShifts[i].PossibleShifts
+                for (let j = 0; j < PossibleShifts.length; j++) {
+                    const newEvent = {
+                        title: PossibleShifts[j].ShiftName,
+                        start: this.parseDateTime(date, PossibleShifts[j].StartHour),
+                        end: this.parseDateTime(date, PossibleShifts[j].EndHour),
+                        Color: PossibleShifts[j].Color,
+                        isDraggable: true,
+                        isResizable: true,
+                        id: this.state.eventId++,
+                        rolesAmount: []
+                    };
+                    for (let k = 0; k < PossibleShifts[j].NeededRoles.length; k++) {
+                        newEvent.rolesAmount.push({
+                            "roleId": PossibleShifts[j].NeededRoles[k].RoleID,
+                            "amount": PossibleShifts[j].NeededRoles[k].NeededWorkers
+                        })
+                    }
+                    events.push(newEvent);
+                }
+            }
+            this.setState({ events: events });
+            this.setState({ shiftId: shiftId });
+        }
     }
 
     handleCreateShifts = () => {
@@ -316,6 +402,7 @@ class Prioritizer extends Component {
                 "ShiftName": sortedEvents[i].title,
                 "StartHour": get_hour_format(sortedEvents[i].start),
                 "EndHour": get_hour_format(sortedEvents[i].end),
+                "Color": sortedEvents[i].Color,
                 "NeededRoles": []
             }
             for (let j = 0; j < sortedEvents[i].rolesAmount.length; j++) {
@@ -336,21 +423,79 @@ class Prioritizer extends Component {
     }
 
     async createShifts(id, data) {
-        const { ShiftID } = this.state;
-        if (ShiftID) {
-
-        }
-        else {
-            const response = await CreateTeamShifts(id, data);
+        const response = await CreateTeamShifts(id, data);
+        if (Object.keys(response).length != 0) {
             this.setState({ ShiftID: response.ShiftID })
         }
     }
 
+    async createNewTemplate(template) {
+        const response = await CreateTemplate(template);
+        if (Object.keys(response).length != 0) {
+            const { shiftTemplate } = this.state;
+            shiftTemplate.push(response);
+            this.setState({ shiftTemplate: shiftTemplate })
+        }
+    }
+
+    handleSaveTemplateChanges = () => {
+        const { selectedTemplate, shiftTemplate } = this.state;
+        if (!selectedTemplate.TemplateID) {
+            this.createNewTemplate(selectedTemplate);
+            this.setState({
+                isPopupOpen: false,
+                selectedTemplate: null,
+            });
+            return
+        }
+        this.saveTemplate(selectedTemplate);
+        const selectedIndex = shiftTemplate.findIndex(template => template.TemplateID === selectedTemplate.TemplateID);
+        if (selectedIndex !== -1) {
+            // Replace the selectedTemplate in the shiftTemplate list
+            const updatedShiftTemplate = [...shiftTemplate];
+            updatedShiftTemplate[selectedIndex] = selectedTemplate;
+            this.setState({
+                shiftTemplate: updatedShiftTemplate,
+                isPopupOpen: false,
+                selectedTemplate: null,
+            });
+        }
+        else {
+            this.setState({
+                isPopupOpen: false,
+                selectedTemplate: null,
+            });
+        }
+    }
+
+    async saveTemplate(template) {
+        const { selectedTitles } = this.state;
+        let response = await updateTemplate(template);
+        if (Object.keys(response).length === 0) {
+            const templates = await GetTeamTemplate(selectedTitles.value)
+            this.setState({ shiftTemplate: templates })
+        }
+    }
+
+    handleAddTemplateRole = () => {
+        const { selectedTemplate } = this.state;
+        const newRole = {
+            roleId: "", // Will store the role's ID
+            NeededWorkers: 0 // Will store the corresponding amount
+        };
+        const updatedRolesAmount = [...selectedTemplate.NeededRoles, newRole];
+        this.setState({
+            selectedTemplate: {
+                ...selectedTemplate,
+                NeededRoles: updatedRolesAmount
+            }
+        });
+    }
     handleAddRole = () => {
         const { selectedEvent } = this.state;
         const newRole = {
             roleId: "", // Will store the role's ID
-            amount: "" // Will store the corresponding amount
+            amount: 0 // Will store the corresponding amount
         };
         const updatedRolesAmount = [...selectedEvent.rolesAmount, newRole];
         this.setState({
@@ -360,6 +505,17 @@ class Prioritizer extends Component {
             }
         });
     };
+    handleRoleTemplateChange = (event, index) => {
+        const { selectedTemplate } = this.state;
+        const updatedRolesAmount = [...selectedTemplate.NeededRoles];
+        updatedRolesAmount[index].RoleID = event.target.value;
+        this.setState({
+            selectedTemplate: {
+                ...selectedTemplate,
+                NeededRoles: updatedRolesAmount
+            }
+        });
+    }
     handleRoleChange = (event, index) => {
         const { selectedEvent } = this.state;
         const updatedRolesAmount = [...selectedEvent.rolesAmount];
@@ -372,6 +528,17 @@ class Prioritizer extends Component {
         });
     };
 
+    handleAmountTemplateChange = (event, index) => {
+        const { selectedTemplate } = this.state;
+        const updatedRolesAmount = [...selectedTemplate.NeededRoles];
+        updatedRolesAmount[index].NeededWorkers = parseInt(event.target.value);
+        this.setState({
+            selectedTemplate: {
+                ...selectedTemplate,
+                NeededRoles: updatedRolesAmount
+            }
+        });
+    }
     handleAmountChange = (event, index) => {
         const { selectedEvent } = this.state;
         const updatedRolesAmount = [...selectedEvent.rolesAmount];
@@ -384,6 +551,17 @@ class Prioritizer extends Component {
         });
     };
 
+    handleRemoveTemplateRole = (index) => {
+        const { selectedTemplate } = this.state;
+        const updatedRolesAmount = [...selectedTemplate.NeededRoles];
+        updatedRolesAmount.splice(index, 1);
+        this.setState({
+            selectedTemplate: {
+                ...selectedTemplate,
+                NeededRoles: updatedRolesAmount
+            }
+        });
+    }
     handleRemoveRole = (index) => {
         const { selectedEvent } = this.state;
         const updatedRolesAmount = [...selectedEvent.rolesAmount];
@@ -396,10 +574,126 @@ class Prioritizer extends Component {
         });
     };
 
+    handleClick = (template) => {
+        let temp = { ...template }
+        this.setState({
+            isPopupOpen: true,
+            selectedTemplate: temp,
+        });
+    };
+
+    async deleteTemplate(templateId) {
+        const { selectedTitles } = this.state;
+        let response = await deleteTemplate(templateId);
+        if (!response) {
+            const templates = await GetTeamTemplate(selectedTitles.value)
+            this.setState({ shiftTemplate: templates })
+        }
+    }
+
+    handleDeletePopup = () => {
+        const { selectedTemplate, shiftTemplate } = this.state;
+        if (!selectedTemplate.TemplateID) {
+            this.setState({
+                isPopupOpen: false,
+                selectedTemplate: null,
+            });
+            return
+        }
+        this.deleteTemplate(selectedTemplate.TemplateID);
+        const selectedIndex = shiftTemplate.findIndex(template => template.TemplateID === selectedTemplate.TemplateID);
+        if (selectedIndex !== -1) {
+            const updatedShiftTemplate = [...shiftTemplate];
+
+            // Remove the element at the selectedIndex
+            updatedShiftTemplate.splice(selectedIndex, 1);
+            this.setState({
+                shiftTemplate: updatedShiftTemplate,
+                isPopupOpen: false,
+                selectedTemplate: null,
+            });
+        }
+        else {
+            this.setState({
+                isPopupOpen: false,
+                selectedTemplate: null,
+            });
+        }
+    };
+    handleClosePopup = () => {
+        this.setState({
+            isPopupOpen: false,
+            selectedTemplate: null,
+        });
+    };
+
+    handleTemplateNameChange = (event) => {
+        this.setState({ selectedTemplate: event });
+    };
+
+    getRoleNameFromId(roleId) {
+        const roles = this.state.roles
+        for (let i = 0; i < roles.length; i++) {
+            if (roles[i].id === roleId) {
+                return roles[i].name;
+            }
+        }
+        return roles[0].name
+    }
+
+    createTemplate() {
+        const { selectedTitles } = this.state;
+        const newTemplate = {
+            "TemplateID": null,
+            "TeamID": selectedTitles.value,
+            "TemplateName": "",
+            "StartHour": 0,
+            "EndHour": 0,
+            "Color": "#ffffff",
+            "NeededRoles": [
+            ]
+        }
+        this.setState({
+            isPopupOpen: true,
+            selectedTemplate: newTemplate,
+        });
+    }
+
+    integerToHour(integer) {
+        const hourPart = Math.floor(integer / 100);
+        const minutePart = integer % 100;
+        return `${hourPart.toString().padStart(2, "0")}:${minutePart.toString().padStart(2, "0")}`;
+    }
+
+    hourToInteger(hour) {
+        const [hourPart, minutePart] = hour.split(":");
+        return parseInt(hourPart, 10) * 100 + parseInt(minutePart, 10);
+    }
+
+    handleStartHourChange = (e) => {
+        const value = e.target.value;
+        this.setState((prevState) => ({
+            selectedTemplate: {
+                ...prevState.selectedTemplate,
+                StartHour: this.hourToInteger(value),
+            },
+        }));
+    };
+
+    handleEndHourChange = (e) => {
+        const value = e.target.value;
+        this.setState((prevState) => ({
+            selectedTemplate: {
+                ...prevState.selectedTemplate,
+                EndHour: this.hourToInteger(value),
+            },
+        }));
+    };
+
 
 
     render() {
-        const { events, teams, selectedTitles, selectedEvent, showModal, shiftTemplate, selectedDay, roles } = this.state;
+        const { events, teams, selectedTitles, selectedEvent, showModal, shiftTemplate, selectedDay, roles, showPopup } = this.state;
         const options = teams.map(team => ({
             value: team.id,
             label: team.name
@@ -483,7 +777,7 @@ class Prioritizer extends Component {
                                     </div>
                                     <div className="color-picker-container" style={{ marginBottom: "10px" }}>
                                         <ChromePicker
-                                            color={selectedEvent.color}
+                                            color={selectedEvent.Color}
                                             onChange={this.handleColorChange}
                                         />
                                     </div>
@@ -530,23 +824,101 @@ class Prioritizer extends Component {
                                     <div
                                         className="template-item"
                                         draggable="true"
-                                        key={template.title}
-                                        id={template.id}
-                                        title={template.title}
+                                        key={template.TemplateName}
+                                        id={template.TemplateID}
+                                        title={template.TemplateName}
                                         onDragStart={() => this.handleDragStart(template)}
-                                        style={{ backgroundColor: template.color }}
+                                        onClick={() => this.handleClick(template)}
+                                        style={{ backgroundColor: template.Color }}
                                     >
-                                        {template.title}
+                                        {template.TemplateName}
                                     </div>
                                 ))}
                             </div>
                             <div style={{ flex: '10%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                                <button>Create Template</button>
+                                <button onClick={() => this.createTemplate()}>
+                                    Create Template
+                                </button>
                             </div>
                         </div>
+                        {this.state.isPopupOpen && (
+                            <div className="popup-overlay">
+                                <div className="popup">
+                                    <h3>Edit Template</h3>
+                                    <div>
+                                        <label>
+                                            Template Name:
+                                            <input
+                                                type="text"
+                                                value={this.state.selectedTemplate.TemplateName}
+                                                onChange={this.handleTitleTemplateChange}
+                                            />
+                                        </label>
+                                    </div>
+                                    <div>
+                                        <label>
+                                            Start Hour:
+                                            <input
+                                                type="time"
+                                                value={this.integerToHour(this.state.selectedTemplate.StartHour)}
+                                                onChange={this.handleStartHourChange}
+                                            />
+                                        </label>
+                                    </div>
+                                    <div>
+                                        <label>
+                                            End Hour:
+                                            <input
+                                                type="time"
+                                                value={this.integerToHour(this.state.selectedTemplate.EndHour)}
+                                                onChange={this.handleEndHourChange}
+                                            />
+                                        </label>
+                                    </div>
+                                    <div>
+                                        <ChromePicker
+                                            color={this.state.selectedTemplate.Color}
+                                            onChange={this.handleColorTemplateChange}
+                                        />
+                                    </div>
+                                    <div>
+                                        {this.state.selectedTemplate.NeededRoles.map((roleAmount, index) => (
+                                            <div key={index} style={{ marginBottom: "10px" }}>
+                                                <select
+                                                    value={roleAmount.RoleID}
+                                                    onChange={(e) => this.handleRoleTemplateChange(e, index)}
+                                                >
+                                                    <option value="">Select Role</option>
+                                                    {roles.map((role) => (
+                                                        <option key={role.id} value={role.id}>
+                                                            {role.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <input
+                                                    type="number"
+                                                    value={roleAmount.NeededWorkers}
+                                                    onChange={(e) => this.handleAmountTemplateChange(e, index)}
+                                                />
+                                                <button onClick={() => this.handleRemoveTemplateRole(index)}>
+                                                    Remove
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <button onClick={this.handleAddTemplateRole}>Add Role</button>
+                                    {/* Add more form inputs for other fields as needed */}
+                                    <div>
+                                        <button onClick={this.handleSaveTemplateChanges}>Save Changes</button>
+                                        <button onClick={this.handleClosePopup}>Close</button>
+                                        <button onClick={this.handleDeletePopup}>Delete template</button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
-                <button onClick={this.handleCreateShifts}>Save Changes</button>
+                <button className="thebutton" onClick={this.handleCreateShifts}>Save Changes</button>
             </div>
         );
     }
