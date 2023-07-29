@@ -208,26 +208,17 @@ const GetRoles = async () => {
 }
 
 
-const GetTeamAssignments = async (date: {}) => {
-  let myUrl = `${URL}${localStorage.getItem("companyId")}/assignments/?`;
-  let team_ids: string[] = []
-  let all_data: string[] = []
-  let local_team_ids = localStorage.getItem("teamIds");
-  if (local_team_ids) {
-    team_ids = local_team_ids.split(',');
-  }
-  for (let i = 0; i < team_ids.length; i++) {
-    let updateUrl = myUrl + `&team_id=${team_ids[i]}`;
-    const response = await fetch(`${updateUrl}`, methodGetWithData(date));
-    if (response.status === 200) {
-      const data = await response.json();
-      if (data != "No team_id for ShiftsGet :(") {
-        all_data.push(data);
-      }
+const GetTeamAssignments = async (data: {}, team_id: String) => {
+  let myUrl = `${URL}${localStorage.getItem("companyId")}/assignments/?team_id=${team_id}`;
+  const response = await fetch(`${myUrl}`, methodGetWithData(data));
+  if (response.status === 200) {
+    const data = await response.json();
+    if (data != "No team_id for ShiftsGet :(") {
+      return data
     }
   }
-  return all_data;
-};
+  return [];
+}
 
 const GetTeamShifts = async (team_id: string, dates: {}) => {
   let myUrl = `${URL}${localStorage.getItem("companyId")}/shifts/?team_id=${team_id}`;
@@ -242,22 +233,22 @@ const GetTeamShifts = async (team_id: string, dates: {}) => {
 const CreateTeamShifts = async (team_id: string, shifts: {}) => {
   let myUrl = `${URL}${localStorage.getItem("companyId")}/shifts/`;
   const response = await fetch(`${myUrl}`, methodPost(shifts));
-  if (response.status === 200) {
+  if (response.status === 201) {
     const data = await response.json();
     return data;
   }
-  return [];
+  return {};
 }
 
 
 const GetTeamTemplate = async (team_id: string) => {
   let myUrl = `${URL}${localStorage.getItem("companyId")}/shift-templates/?team_id=${team_id}`;
   const response = await fetch(`${myUrl}`, methodGetWithData({}));
-  const data = await response.json();
-  if (response.status === 200) {
+  if (response.status === 201) {
+    const data = await response.json();
     return data;
   }
-  return data.message
+  return []
 };
 
 const GetAssignments = async (date: Date) => {
@@ -277,6 +268,36 @@ const GetAssignments = async (date: Date) => {
   }
   return all_data;
 }
+
+
+const updateTemplate = async (data: {}) => {
+  let myUrl = `${URL}${localStorage.getItem("companyId")}/shift-templates/`;
+  const response = await fetch(`${myUrl}`, methodPatch(data));
+  if (response.status === 201) {
+    const data = await response.json();
+    return data;
+  }
+  return {}
+};
+
+const deleteTemplate = async (templateId: String) => {
+  let myUrl = `${URL}${localStorage.getItem("companyId")}/shift-templates/?TemplateID=${templateId}`;
+  const response = await fetch(`${myUrl}`, methodDelete());
+  if (response.status === 201) {
+    return true;
+  }
+  return false;
+};
+
+const CreateTemplate = async (template: {}) => {
+  let myUrl = `${URL}${localStorage.getItem("companyId")}/shift-templates/`;
+  const response = await fetch(`${myUrl}`, methodPost(template));
+  if (response.status === 201) {
+    const data = await response.json();
+    return data;
+  }
+  return {};
+};
 
 
 // const userLogin = async (user: LoginForm) => {

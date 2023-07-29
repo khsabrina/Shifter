@@ -7,7 +7,6 @@ import { GetTeamShifts, GetTeamTemplate, GetTeamList, CreateTeamShifts, GetRoles
 import moment from "moment";
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
-import Modal from 'react-modal';
 import { ChromePicker } from 'react-color';
 import "./Prioritizer.css";
 import Select from 'react-select';
@@ -128,6 +127,9 @@ class Prioritizer extends Component {
         if (hourString.length === 3) {
             hourValue = '0' + hourString.substring(0, 1);
             minuteValue = hourString.substring(1, 3);
+        } else if (hourString.length === 1) {
+            hourValue = '00'
+            minuteValue = '00';
         } else {
             hourValue = hourString.substring(0, 2);
             minuteValue = hourString.substring(2, 4);
@@ -754,28 +756,15 @@ class Prioritizer extends Component {
                             date={selectedDay}
                             onNavigate={date => { this.handleDateChange(date); }}
                         />
-                        <Modal
-                            appElement={document.getElementById('root')}
-                            className="modal"
-                            isOpen={showModal}
-                            onRequestClose={() => this.setState({ showModal: false })}
-                            style={{
-                                content: {
-                                    height: "fit-content",
-                                    width: "fit-content",
-                                    position: "fixed",
-                                    inset: "unset",
-                                    top: "50%",
-                                    left: "50%"
-                                }
-                            }}
-                        >
-                            {selectedEvent && (
-                                <div>
-                                    <div style={{ marginBottom: "10px" }}>
+
+                        {showModal && (
+                            <div className="popup-overlay">
+                                <div className="popup">
+                                    <h3>Edit shift</h3>
+                                    <div>
                                         <input value={selectedEvent.title} onChange={this.handleTitleChange} />
                                     </div>
-                                    <div className="color-picker-container" style={{ marginBottom: "10px" }}>
+                                    <div>
                                         <ChromePicker
                                             color={selectedEvent.Color}
                                             onChange={this.handleColorChange}
@@ -807,14 +796,16 @@ class Prioritizer extends Component {
                                         ))}
                                     </div>
                                     <button onClick={this.handleAddRole}>Add Role</button>
-                                    <div style={{ display: "flex", justifyContent: "space-between" }}>
-                                        <button onClick={this.handleDeleteEvent}>Delete</button>
-                                        <button onClick={this.handleSaveChanges}>Save changes</button>
+                                    <div>
+                                        <div>
+                                            <button onClick={this.handleSaveChanges}>Save changes</button>
+                                            <button onClick={() => this.setState({ showModal: false })}>Close</button>
+                                            <button onClick={this.handleDeleteEvent}>Delete</button>
+                                        </div>
                                     </div>
                                 </div>
-                            )}
-                        </Modal>
-
+                            </div>
+                        )}
                     </div>
                     <div className="template-wrapper" style={{ flex: 1 }}>
                         <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
