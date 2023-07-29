@@ -28,6 +28,18 @@ const methodPost = (data: any) => {
   };
 };
 
+const methodDelete = () => {
+  return {
+    method: "DELETE",
+    // body: JSON.stringify(data),
+    headers: {
+      "content-type": "application/json",
+      Accept: "application/json",
+      Authorization: `Token ${localStorage.getItem("token")}`
+    },
+  };
+};
+
 const methodPostToLogin = (data: any) => {
   return {
     method: "POST",
@@ -123,10 +135,11 @@ const TeamInfo = async () => {
 
 const CreateTeam = async (team: {}) => {
   console.log(team)
-  const response = await fetch(`${URL}0/team/`, methodPost(team));
+  const response = await fetch(`${URL}${localStorage.getItem("companyId")}/team/`, methodPost(team));
   const data = await response.json();
   if (response.status === 201) {
     console.log(data)
+    return data
     // auth.setUser(data);
   }
 };
@@ -134,6 +147,25 @@ const CreateTeam = async (team: {}) => {
 const CreateUser = async (user: {}) => {
   // console.log(team)
   const response = await fetch(`${URL}${localStorage.getItem("companyId")}/employee/`, methodPost(user));
+  const data = await response.json();
+  if (response.status === 201) {
+    console.log(data)
+    return data;
+    // auth.setUser(data);
+  }
+};
+
+const EditUser = async (selectedId: string, user: {}) => {
+  // console.log(team)
+  const response = await fetch(`${URL}${localStorage.getItem("companyId")}/employee/${selectedId}/`, methodPatch(user));
+  const data = await response.json();
+  if (response.status === 201) {
+    console.log(data)
+    // auth.setUser(data);
+  }
+};
+const DeleteUser = async (selectedId: string) => {
+  const response = await fetch(`${URL}${localStorage.getItem("companyId")}/employee/${selectedId}`, methodDelete());
   const data = await response.json();
   if (response.status === 201) {
     console.log(data)
@@ -147,6 +179,7 @@ const CreateRole = async (role: {}) => {
   const data = await response.json();
   if (response.status === 201) {
     console.log(data)
+    return data
     // auth.setUser(data);
   }
 };
@@ -385,7 +418,9 @@ export {
   GetTeamList,
   GetTeamShifts,
   CreateTeamShifts,
-  GetRoles
+  GetRoles,
+  EditUser,
+  DeleteUser
   // userSignup,
   // fetchOrganizations,
   // fetchUsers,

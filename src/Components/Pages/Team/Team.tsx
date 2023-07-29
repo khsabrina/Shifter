@@ -1,27 +1,36 @@
 import Layout from "../../LayoutArea/Layout/Layout";
 import UserPic from "./UserCircle/NoPhotoUser.png"
-import {TeamInfo, getUser, CreateTeam, getTeam, getRole, getAllUserTeam, CreateRole, getAllRoles, CreateUser} from "../../../actions/apiActions"
+import {TeamInfo, getUser, CreateTeam, getTeam, getRole, getAllUserTeam, CreateRole, getAllRoles, CreateUser,DeleteUser, EditUser} from "../../../actions/apiActions"
 import "./Team.css"
 import React, { ChangeEvent, ReactNode, useEffect, useState } from 'react';
 import {Typography,Autocomplete,MenuItem,Checkbox,Box,Table,TableBody,TableCell,TableContainer,TableHead,TableRow,Paper,Switch, FormControlLabel
-,IconButton,Dialog,DialogTitle,DialogContent,DialogContentText,DialogActions,TextField, Button, FormControl, InputLabel, Select, Grid, Menu, SelectChangeEvent, MenuItemProps,
+,IconButton,Dialog,DialogTitle,DialogContent,DialogContentText,DialogActions,TextField, Button, FormControl, InputLabel, Select, Grid, Menu, SelectChangeEvent, MenuItemProps, InputAdornment, FormHelperText,
 } from '@mui/material';
-import { Delete as DeleteIcon, Edit as EditIcon, Email, Rowing, Rule } from '@mui/icons-material';
+import { Delete as DeleteIcon, Edit as EditIcon, Email, Rowing, Rule, Visibility, VisibilityOff } from '@mui/icons-material';
 import UserCircle from "./UserCircle/UserCircle";
 import { alignProperty } from "@mui/material/styles/cssUtils";
 import SearchBar from './SearchBar/SearchBar'
 import { range } from "lodash";
 import auth from "../../auth/auth";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import { ChromePicker } from 'react-color';
+
 
 
 
 interface Row {
-  id: number;
+  id: string;
   imageSrc: string;
   firstName: string;
   lastName: string;
   jobDescription: string;
   team: string;
+  email: string;
+  teamID : string;
+  jobDescriptionID : string;
+
+  
 }
 
 interface NewUser {
@@ -45,21 +54,21 @@ const data = [
 ];
 
 interface Team {
-  id: string
-  company_id: string;
+  id: string;
   name: string;
+  company_id: string;
   manager : string;
 }
 
 interface Role {
-  id: string
+  id: string;
   name: string;
   description : string;
   company_id: string;
 }
 
 
-const Team = () => {
+let Team = () => {
 
   const [userList, setuserList] = useState<Row[]>([]);
   const [teamList, setTeamList] = useState<Team[]>([]);
@@ -70,11 +79,14 @@ const Team = () => {
   const [lastName, setLastName] = useState('');
   const [jobDescription, setJobDescription] = useState('');
   const [team, setTeam] = useState('');
+  const [teamID, setTeamID] = useState('');
+  const [jobDescriptionID, setJobDescriptionID] = useState('');
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [imageSrc, setimageSrc] = useState<string>('');
   const [isManager, setIsManager] = useState(false);
-  const [selectedRowId, setSelectedRowId] = useState<number | null>(null);
+  const [selectedRowId, setSelectedRowId] = useState<string>('');
   const [dialogMode, setDialogMode] = useState<'add' | 'edit'>('add');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [firstNameSearch, setFirstNameSearch] = useState('');
@@ -97,8 +109,15 @@ const Team = () => {
   const [teamChange, setTeamChange] = useState<string>('');
   const [emailChange, setEmailChange] = useState<string>('');
   const [passwordChange, setPasswordChange] = useState('');
+  const [passwordChange2, setPasswordChange2] = useState('');
+  const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
-  
+  const [pickedColor, setPickedColor] = useState('#ffffff'); // Set initial color here, e.g., white (#ffffff)
+  const [isColorPickerOpen, setColorPickerOpen] = useState(false);
+
+
+
 
   useEffect(() => {
     console.log(rows);
@@ -114,39 +133,53 @@ const Team = () => {
           getAllUserTeam(),
           getAllRoles(),
         ]);
-  
-        const Tlist = teamListResult.reduce((acc, team) => {
-          if (team.name !== "") {
-            acc[team.id] = team;
-          }
-          return acc;
-        }, []);
-  
-        const Rlist = roleListResult.reduce((acc, role) => {
-          if (role.name !== "") {
-            acc[role.id] = role;
-          }
-          return acc;
-        }, []);
-  
+        const itemsTeam = await Promise.all(
+          teamListResult.map(async (item) => {
+            return {
+              id: item.id,
+              name: item.name,
+              company_id: item.company_id,
+              manager: item.manager,
+            };
+          })
+        );
+        const itemsRole = await Promise.all(
+          roleListResult.map(async (item) => {
+            return {
+              id: item.id,
+              name: item.name,
+              description: item.company_id,
+              company_id: item.manager,
+            };
+          })
+        );
+
         if (isMounted) {
-          setTeamList(Tlist);
-          setRoleList(Rlist)
+          setTeamList(itemsTeam);
+          setRoleList(itemsRole);
+          
+          // Use Promise.all to ensure teamList and RoleList are populated
           const items = await Promise.all(
             result.map(async (item) => {
+              // Access team name and role name from the populated teamList and RoleList arrays
+              const teamName = itemsTeam.find((team) => team.id === item.team_id)?.name || "Unknown Team";
+              const roleName = itemsRole.find((role) => role.id === item.role_id)?.name || "Unknown Role";
+  
               return {
                 id: item.id,
                 firstName: item.first_name,
                 lastName: item.last_name,
-                team: Tlist[item.team_id].name,
-                jobDescription: Rlist[item.role_id].name,
+                team: teamName,
+                teamID: item.team_id,
+                jobDescriptionID: item.role_id,
+                jobDescription: roleName,
                 imageSrc: UserPic,
+                email: item.username,
               };
             })
           );
   
           setuserList(items);
-          console.log("here4444444");
           setRows(items);
         }
       } catch (error) {
@@ -160,6 +193,69 @@ const Team = () => {
       isMounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    console.log(rows);
+  }, [rows]);
+  
+  // useEffect(() => {
+  //   let isMounted = true;
+  
+  //   async function fetchData() {
+  //     try {
+  //       const [result, teamListResult, roleListResult] = await Promise.all([
+  //         TeamInfo(),
+  //         getAllUserTeam(),
+  //         getAllRoles(),
+  //       ]);
+  
+  //       const Tlist = teamListResult.reduce((acc, team) => {
+  //         if (team.name !== "") {
+  //           acc[team.id] = team;
+  //         }
+  //         return acc;
+  //       }, []);
+  
+  //       const Rlist = roleListResult.reduce((acc, role) => {
+  //         if (role.name !== "") {
+  //           acc[role.id] = role;
+  //         }
+  //         return acc;
+  //       }, []);
+  
+  //       if (isMounted) {
+  //         setTeamList(Tlist);
+  //         setRoleList(Rlist)
+  //         const items = await Promise.all(
+  //           result.map(async (item) => {
+  //             return {
+  //               id: item.id,
+  //               firstName: item.first_name,
+  //               lastName: item.last_name,
+  //               team: Tlist[item.team_id].name,
+  //               teamID: item.team_id,
+  //               jobDescriptionID : item.role_id,
+  //               jobDescription: Rlist[item.role_id].name,
+  //               imageSrc: UserPic,
+  //               email : item.username,
+  //             };
+  //           })
+  //         );
+  
+  //         setuserList(items);
+  //         setRows(items);
+  //       }
+  //     } catch (error) {
+  //       // Handle error if any
+  //     }
+  //   }
+  
+  //   fetchData(); // Fetch data when the component mounts
+  
+  //   return () => {
+  //     isMounted = false;
+  //   };
+  // }, []);
   
 
   useEffect(() => {
@@ -198,36 +294,64 @@ const Team = () => {
   };
   const onTeamCreate = async (data: {}) => {
       if (auth.isAuthenticated() === true) {
-        await CreateTeam(data);
+        return await CreateTeam(data);
       }
   };
-
+  const onUserEdit = async (id: string ,data: {}) => {
+    if (auth.isAuthenticated() === true) {
+      await EditUser(id, data);
+    }
+};
   const onUserCreate = async (data: {}) => {
     if (auth.isAuthenticated() === true) {
-      await CreateUser(data);
+      return await CreateUser(data);
     }
+};
+
+const onUserDelete = async (id: string) => {
+  if (auth.isAuthenticated() === true) {
+    return await DeleteUser(id);
+  }
 };
 
   const onJobDescriptionCreate = async (data: {}) => {
     if (auth.isAuthenticated() === true) {
-      await CreateRole(data);
+      return await CreateRole(data);
     }
 };
 
   const handleNewTeamClose = () => {
     setNewTeamOpen(false);
+    SetAddNewTeamName('')
+
   };
 
   const handleNewJobDescriptionClose = () => {
+    SetAddNewJobDescriptionName('')
     setNewJobDescriptionOpen(false);
   };
-  const handleCreateNewTeamClose = () => {
-    onTeamCreate({"company_id": localStorage.getItem("companyId"), "name": AddNewTeamName, "manager": localStorage.getItem("userId")});
-    handleNewTeamClose()
+  const handleCreateNewTeamClose = async () => {
+    let data  = {};
+    data = await onTeamCreate({"company_id": localStorage.getItem("companyId"), "name": AddNewTeamName, "manager": localStorage.getItem("userId")});
+    // console.log(data['id'])
+    // const new_team = {id: data['id'],name: data['name'],manager: data['manager'] ,company_id: data['company_id']};
+    // teamList[data['id']] = new_team
+    setTeamList((prevTeams) => [
+      ...prevTeams,
+      {id: data['id'],name: data['name'],manager: data['manager'] ,company_id: data['company_id']},
+    ]);
+    handleNewTeamClose();
   };
 
-  const handleCreateNewJobDescriptionClose = () => {
-    onJobDescriptionCreate({"company_id": localStorage.getItem("companyId"), "name": AddNewJobDescriptionName});
+  const handleCreateNewJobDescriptionClose = async () => {
+    let data  = {};
+    data = await onJobDescriptionCreate({"company_id": localStorage.getItem("companyId"), "name": AddNewJobDescriptionName});
+    console.log(data['id'])
+
+    setRoleList((prevRoles) => [
+      ...prevRoles,
+      {id: data['id'],name: data['name'],description: data['description'] ,company_id: data['company_id']},
+    ]);
     handleNewJobDescriptionClose()
   };
 
@@ -242,32 +366,59 @@ const Team = () => {
 
   const handleAddNewEmployee = () => {
     setDialogMode('add');
-    setFirstName('');
-    setLastName('');
-    setJobDescription('');
+    setFirstNameChange('');
+    setLastNameChange('');
+    setJobDescriptionChange('');
+    setEmailChange('')
+    setPasswordChange('')
+    setPasswordChange2('')
+    setTeamChange('')
+    setJobDescriptionChange('')
     setimageSrc(UserPic)
     setDialogOpen(true);
     handleMenuAddClose();
+    setError('');
   };
 
   const handleEditRow = (row: typeof userList[0]) => {
     setDialogMode('edit');
     setFirstName(row.firstName);
     setLastName(row.lastName);
-    setJobDescription(row.jobDescription);
+    setJobDescriptionChange(row.jobDescriptionID);//need to fix it to be the JobDescription of the user
+    setTeamChange(row.teamID);///need to fix it to be the team of the user
+    setFirstNameChange(row.firstName);
+    setLastNameChange(row.lastName);
+    setTeamID(row.teamID);
+    console.log(row.teamID);
+    console.log(row.jobDescriptionID);
+    setJobDescriptionID(row.jobDescriptionID);
+    // setJobDescriptionChange('');//need to fix it to be the JobDescription of the user
+    // setTeamChange('');///need to fix it to be the team of the user
+    // setPasswordChange('');
+    setEmailChange(row.email)
+
     setSelectedRowId(row.id);
     setimageSrc(row.imageSrc);
     setDialogOpen(true);
   };
 
-  const handleDeleteRow = (id: number) => {
+  const handleDeleteRow = (id: string) => {
     setRows((prevRows) => prevRows.filter((row) => row.id !== id));
     const deleteRow: Row[] = userList.filter((team) => team.id !== id);
     setuserList(deleteRow);
-  };
+    onUserDelete(id);
 
+
+  };
+  const handlePasswordChange2 = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setPasswordChange2(event.target.value);
+  };
   const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setPasswordChange(event.target.value);
+  };
+
+  const handleTogglePasswordVisibility = () => {
+    setShowPassword((prevShowPassword) => !prevShowPassword);
   };
 
   const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -337,33 +488,89 @@ const Team = () => {
   //     await CreateTeam(data);
   //   }
   // };
-
-  const handleSaveRow = () => {
+  const handleSaveRow = () =>{
+    if (firstNameChange === '' || lastNameChange === '' || emailChange === '' || teamChange === '' || jobDescriptionChange === '') {
+      alert('Please fill in all required fields.');
+      return;
+    }
     if (dialogMode === 'add') {
-      // const handleCreateNewTeamClose = () => {
-      //   const newUser : NewUser = {company_id: localStorage.getItem("companyId"), name: AddNewTeamName, manager: localStorage.getItem("userId")}
-      //   onNewUserCreate(newUser);
-      //   handleNewTeamClose()
-      // };
-      if (isManager){
-        onUserCreate({"company_id": localStorage.getItem("companyId"), "username": emailChange, "first_name": firstNameChange, 
-        "last_name": lastNameChange, "password" : passwordChange, "team_id":teamChange,"role_id":jobDescriptionChange});
+      if (passwordChange === passwordChange2){
+          const uppercaseRegex = /[A-Z]/;
+          const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/;
+          const numberRegex = /\d/;
+          if (!uppercaseRegex.test(passwordChange)) {
+            setError('The password must be 8 or more characters with at least 1 special character, 1 uppercase letter and 1 number.');
+          } else if (!specialCharRegex.test(passwordChange)) {
+            setError('The password must be 8 or more characters with at least 1 special character, 1 uppercase letter and 1 number.');
+          } else if (!numberRegex.test(passwordChange)) {
+            setError('The password must be 8 or more characters with at least 1 special character, 1 uppercase letter and 1 number.');
+          } else {
+            setError('');
+            AddUserDialog();
+          }
+      }else{
+        setError('The password confirmation does not match');
       }
-      else {
-        onUserCreate({"company_id": localStorage.getItem("companyId"), "username": emailChange, "first_name": firstNameChange, 
-        "last_name": lastNameChange, "password" : passwordChange, "team_id":teamChange,"role_id":jobDescriptionChange ,"is_admin" : "false"});
+    }else{
+      EditUserDialog();
+    }
+        
+  }
+  const EditUserDialog = async () => {
+    if (isManager){
+      await onUserEdit(selectedRowId,{"company_id": localStorage.getItem("companyId"), "username": emailChange, "first_name": firstNameChange, 
+      "last_name": lastNameChange, "team_id":teamChange,"role_id":jobDescriptionChange});
+    }
+    else {
+      await onUserEdit(selectedRowId,{"company_id": localStorage.getItem("companyId"), "username": emailChange, "first_name": firstNameChange, 
+      "last_name": lastNameChange, "team_id":teamChange,"role_id":jobDescriptionChange ,"is_admin" : "false"});
+    }
+    const updatedRows = rows.map((row) => {
+      if (row.id === selectedRowId) {
+        // If the row id matches the selectedRowId, update the row with new values
+        const teamName = teamList.find((team) => team.id === teamChange)?.name || "Unknown Team";
+        const roleName = RoleList.find((role) => role.id === jobDescriptionChange)?.name || "Unknown Role";
+        return {
+          ...row,
+          firstName: firstNameChange,
+          lastName: lastNameChange,
+          jobDescription: roleName,
+          jobDescriptionID: jobDescriptionChange,
+          team: teamName,
+          teamID: teamChange,
+          email: emailChange,
+        };
       }
-      setRows((prevRows) => [
-        ...prevRows,
-        {id: Date.now(),imageSrc,firstName,lastName,jobDescription,team},
-      ]);
-      setuserList((prevuserList) => [
-        ...prevuserList,
-        {id: Date.now(),imageSrc,firstName,lastName,jobDescription,team},
-      ]);
+      // If the row id doesn't match, return the original row unchanged
+      return row;
+    });
+    
+    // setRows((prevRows) => [
+    //   ...prevRows,
+    //   {id: selectedRowId,imageSrc,firstName: firstNameChange ,lastName: lastNameChange,jobDescription: RoleList[jobDescriptionChange].name,jobDescriptionID: jobDescriptionChange,team: teamList[teamChange].name,teamID: teamChange,email: emailChange},
+    // ]);
+    setRows(updatedRows);
+
+    setDialogOpen(false); 
+};
+  const AddUserDialog = async () => {
+        let data = {}
+        if (isManager){
+          data = await onUserCreate({"company_id": localStorage.getItem("companyId"), "username": emailChange, "first_name": firstNameChange, 
+          "last_name": lastNameChange, "password" : passwordChange, "team_id":teamChange,"role_id":jobDescriptionChange});
+        }
+        else {
+          data = await onUserCreate({"company_id": localStorage.getItem("companyId"), "username": emailChange, "first_name": firstNameChange, 
+          "last_name": lastNameChange, "password" : passwordChange, "team_id":teamChange,"role_id":jobDescriptionChange ,"is_admin" : "false"});
+        }
+        console.log("here")
+        console.log(data['id']);
+        setRows((prevRows) => [
+          ...prevRows,
+          {id: data['id'],imageSrc,firstName: firstNameChange ,lastName: lastNameChange,jobDescription: RoleList[jobDescriptionChange].name,jobDescriptionID: jobDescriptionChange,team: teamList[teamChange].name,teamID: teamChange,email: emailChange},
+        ]);
       
-    } 
-    setDialogOpen(false);
+        setDialogOpen(false); 
   };
 
 
@@ -377,7 +584,7 @@ const Team = () => {
     });
   };
   const handleSearch = () => {
-    const filteredRows = FilterBy(userList, teamSearch, jobDescriptionSearch,firstNameSearch,lastNameSearch);
+    const filteredRows = FilterBy(rows, teamSearch, jobDescriptionSearch,firstNameSearch,lastNameSearch);
     setRows(filteredRows);
   };
 
@@ -605,31 +812,92 @@ const Team = () => {
 
     {/* add employee dialog */}
     {<Dialog open={dialogOpen} onClose={handleDialogClose}>
-      <DialogTitle>{dialogMode === 'add' ? 'Add Employee' : `${firstName} ${lastName}`}</DialogTitle>
+      <DialogTitle>{dialogMode === 'add' ? 'Add Employee' : `${firstNameChange} ${lastNameChange}`}</DialogTitle>
         <DialogContent>
           <DialogContentText>{dialogMode === 'add' ? 'Enter the details for the new employee below' :`${firstName} ${lastName}` }</DialogContentText>
           <TextField
+            required
             autoFocus margin="dense" id="First Name" label="First Name" value={firstNameChange}
             fullWidth onChange={handleFirstNameChange}
           />
           <TextField
+            required
             autoFocus margin="dense" id="Last Name" label="Last Name" value={lastNameChange}
             fullWidth onChange={handleLastNameChange}
           />
           <TextField margin="dense" 
+            required
             id="Mail Adrress" label="Mail Address" value={emailChange} 
             fullWidth onChange={handleEmailChange}
             />
-          <TextField margin="dense" 
-            id="Password" label="Password" value={passwordChange} 
-            fullWidth onChange={handlePasswordChange}
+          {dialogMode === 'add' &&<div>
+            <TextField
+              required
+              margin="dense"
+              id="Password"
+              label="Password"
+              type={showPassword ? 'text' : 'password'} // Toggle between 'text' and 'password' type
+              value={passwordChange}
+              onChange={handlePasswordChange}
+              fullWidth
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      // onClick={handlePassVisibilty}
+                      aria-label="toggle password"
+                      edge="end"
+                      onClick={handleTogglePasswordVisibility}
+                    >
+                      {showPassword ? (
+                        <VisibilityIcon/>
+                      ) : (
+                        <VisibilityOffIcon />
+                      )}
+                    </IconButton>
+                  </InputAdornment>
+                )
+              }}
             />
+            {error && <FormHelperText error>{error}</FormHelperText>}
+          </div>}
+          {dialogMode === 'add' &&<div>
+            <TextField
+              required
+              margin="dense"
+              id="Password"
+              label="Password"
+              type={showPassword ? 'text' : 'password'} // Toggle between 'text' and 'password' type
+              value={passwordChange2}
+              onChange={handlePasswordChange2}
+              fullWidth
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      // onClick={handlePassVisibilty}
+                      aria-label="toggle password"
+                      edge="end"
+                      onClick={handleTogglePasswordVisibility}
+                    >
+                      {showPassword ? (
+                        <VisibilityIcon/>
+                      ) : (
+                        <VisibilityOffIcon />
+                      )}
+                    </IconButton>
+                  </InputAdornment>
+                )
+              }}
+            />
+          </div>}
       <FormControl fullWidth margin="dense">
         <InputLabel id="team-select-label">Team</InputLabel>
         <Select
           labelId="team-select-label"
           id="team-select"
           value={teamChange}
+          defaultValue={teamChange === '' ? teamChange :teamList[teamChange]}
           onChange={handleTeamChange}
           label="Team"
         >
@@ -646,8 +914,9 @@ const Team = () => {
           labelId="jobdescription-select-label"
           id="jobdescription-select"
           value={jobDescriptionChange}
+          defaultValue={jobDescriptionChange === '' ? jobDescriptionChange :RoleList[jobDescriptionChange]}
           onChange={handleJobDescriptionChange}
-          label="Team"
+          label="jobdescription"
         >
         {RoleList.map((Role) => (
           <MenuItem key={Role.id} value={Role.id}>
@@ -662,21 +931,7 @@ const Team = () => {
               <span>{isManager ? 'Manager' : 'Employee'}</span>
             </div>
           </div>
-          {/* <FormControl sx={{ m: 1, minWidth: 120 }}>
-        <InputLabel id="demo-simple-select-helper-label">Age</InputLabel>
-        <Select
-          labelId="demo-simple-select-helper-label"
-          id="demo-simple-select-helper"
-          value={handleTeamChange}
-          label="Age"
-          onChange={handleTeamChange}
-        >
-          {Array.from(new Set(userList.map((row) => row.team))).map((team ,index) => (
-              <MenuItem value={team}>{team}</MenuItem>
-          ))}
-        </Select>
-      </FormControl> */}
-          <input type="file" accept="image/*" onChange={handleFileSelect} />
+          {/* <input type="file" accept="image/*" onChange={handleFileSelect} /> */}
         </div>
         </DialogContent>
         <DialogActions>
