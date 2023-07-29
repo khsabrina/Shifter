@@ -2,7 +2,7 @@ import Layout from "../../LayoutArea/Layout/Layout";
 import UserPic from "./UserCircle/NoPhotoUser.png"
 import {TeamInfo, getUser, CreateTeam, getTeam, getRole, getAllUserTeam, CreateRole, getAllRoles, CreateUser,DeleteUser, EditUser} from "../../../actions/apiActions"
 import "./Team.css"
-import React, { ChangeEvent, ReactNode, useEffect, useState } from 'react';
+import React, { ChangeEvent, ReactNode, useEffect, useRef, useState } from 'react';
 import {Typography,Autocomplete,MenuItem,Checkbox,Box,Table,TableBody,TableCell,TableContainer,TableHead,TableRow,Paper,Switch, FormControlLabel
 ,IconButton,Dialog,DialogTitle,DialogContent,DialogContentText,DialogActions,TextField, Button, FormControl, InputLabel, Select, Grid, Menu, SelectChangeEvent, MenuItemProps, InputAdornment, FormHelperText,
 } from '@mui/material';
@@ -113,8 +113,11 @@ let Team = () => {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const [pickedColor, setPickedColor] = useState('#ffffff'); // Set initial color here, e.g., white (#ffffff)
-  const [isColorPickerOpen, setColorPickerOpen] = useState(false);
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [selectedColor, setSelectedColor] = useState('#000000'); // Default color is black
+
+  const colorPickerRef = useRef(null);
+
 
 
 
@@ -267,6 +270,18 @@ let Team = () => {
     // onRoleChange(event.target.checked);
   };
 
+  const handleColorChange = (color) => {
+    setSelectedColor(color.hex);
+  };
+
+  const toggleColorPicker = () => {
+    setShowColorPicker(!showColorPicker);
+  };
+
+  const handleSaveColor = () => {
+    setShowColorPicker(false);
+    // Add any additional logic here to apply the selected color to the switch or save it elsewhere.
+  };
 
   const handleEmployeeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { value, checked } = event.target;
@@ -519,11 +534,11 @@ const onUserDelete = async (id: string) => {
   const EditUserDialog = async () => {
     if (isManager){
       await onUserEdit(selectedRowId,{"company_id": localStorage.getItem("companyId"), "username": emailChange, "first_name": firstNameChange, 
-      "last_name": lastNameChange, "team_id":teamChange,"role_id":jobDescriptionChange});
+      "last_name": lastNameChange, "team_id":teamChange,"role_id":jobDescriptionChange,"color": selectedColor});
     }
     else {
       await onUserEdit(selectedRowId,{"company_id": localStorage.getItem("companyId"), "username": emailChange, "first_name": firstNameChange, 
-      "last_name": lastNameChange, "team_id":teamChange,"role_id":jobDescriptionChange ,"is_admin" : "false"});
+      "last_name": lastNameChange, "team_id":teamChange,"role_id":jobDescriptionChange ,"is_admin" : "false","color": selectedColor});
     }
     const updatedRows = rows.map((row) => {
       if (row.id === selectedRowId) {
@@ -553,21 +568,36 @@ const onUserDelete = async (id: string) => {
 
     setDialogOpen(false); 
 };
+
+// const handleCreateNewTeamClose = async () => {
+//   let data  = {};
+//   data = await onTeamCreate({"company_id": localStorage.getItem("companyId"), "name": AddNewTeamName, "manager": localStorage.getItem("userId")});
+//   // console.log(data['id'])
+//   // const new_team = {id: data['id'],name: data['name'],manager: data['manager'] ,company_id: data['company_id']};
+//   // teamList[data['id']] = new_team
+//   setTeamList((prevTeams) => [
+//     ...prevTeams,
+//     {id: data['id'],name: data['name'],manager: data['manager'] ,company_id: data['company_id']},
+//   ]);
+//   handleNewTeamClose();
+// };
   const AddUserDialog = async () => {
         let data = {}
         if (isManager){
           data = await onUserCreate({"company_id": localStorage.getItem("companyId"), "username": emailChange, "first_name": firstNameChange, 
-          "last_name": lastNameChange, "password" : passwordChange, "team_id":teamChange,"role_id":jobDescriptionChange});
+          "last_name": lastNameChange, "password" : passwordChange, "team_id":teamChange,"role_id":jobDescriptionChange, "color": selectedColor});
         }
         else {
           data = await onUserCreate({"company_id": localStorage.getItem("companyId"), "username": emailChange, "first_name": firstNameChange, 
-          "last_name": lastNameChange, "password" : passwordChange, "team_id":teamChange,"role_id":jobDescriptionChange ,"is_admin" : "false"});
+          "last_name": lastNameChange, "password" : passwordChange, "team_id":teamChange,"role_id":jobDescriptionChange ,"is_admin" : "false", "color": selectedColor});
         }
+        const teamName = teamList.find((team) => team.id === teamChange)?.name || "Unknown Team";
+        const roleName = RoleList.find((role) => role.id === jobDescriptionChange)?.name || "Unknown Role";
         console.log("here")
         console.log(data['id']);
         setRows((prevRows) => [
           ...prevRows,
-          {id: data['id'],imageSrc,firstName: firstNameChange ,lastName: lastNameChange,jobDescription: RoleList[jobDescriptionChange].name,jobDescriptionID: jobDescriptionChange,team: teamList[teamChange].name,teamID: teamChange,email: emailChange},
+          {id: data['id'],imageSrc,firstName: firstNameChange ,lastName: lastNameChange,jobDescription: roleName,jobDescriptionID: jobDescriptionChange,team: teamName,teamID: teamChange,email: emailChange},
         ]);
       
         setDialogOpen(false); 
@@ -931,7 +961,16 @@ const onUserDelete = async (id: string) => {
               <span>{isManager ? 'Manager' : 'Employee'}</span>
             </div>
           </div>
-          {/* <input type="file" accept="image/*" onChange={handleFileSelect} /> */}
+          <button onClick={toggleColorPicker}>Pick a Color</button>
+      {showColorPicker && (
+        <div className="color-picker-container">
+          <div className="color-picker-backdrop" onClick={toggleColorPicker} />
+          <div className="color-picker-modal">
+            <ChromePicker color={selectedColor} onChange={handleColorChange} />
+            <button onClick={handleSaveColor}>Save</button>
+          </div>
+        </div>
+      )}
         </div>
         </DialogContent>
         <DialogActions>
