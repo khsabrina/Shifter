@@ -441,7 +441,10 @@ export {
   CreateTeamShifts,
   GetRoles,
   EditUser,
-  DeleteUser
+  DeleteUser,
+  updateTemplate,
+  deleteTemplate,
+  CreateTemplate
   // userSignup,
   // fetchOrganizations,
   // fetchUsers,
