@@ -5,6 +5,8 @@ import UserPic from '../UserCircle/NoPhotoUser.png'
 import auth from "../../auth/auth";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import Logout from "../../Pages/Logout/Logout";
+import { createPortal } from "react-dom";
 
 
 interface User {
@@ -20,11 +22,34 @@ interface LayoutProps {
 }
 
 function Layout(props: LayoutProps): JSX.Element {
+    const [showPopup, setShowPopup] = useState(false);
+  const LogoutPortal = showPopup ? (
+    createPortal(
+      <Logout
+        message="Are you sure you want to exit?"
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />,
+      document.body // Render the popup in the root of the application
+    )
+  ) : null;
+  function handleConfirm() {
+    // handle the confirmation action
+    setShowPopup(false);
+    // Perform the actual logout process here
+    // For example, clear session data and redirect to the login page
+  }
+
+  function handleCancel() {
+    // handle the cancel action
+    setShowPopup(false);
+    // Perform any necessary cleanup or handle the cancel action
+  }
   const user: User = {
     firstName: localStorage.getItem("firstName") as string | undefined,
     lastName: localStorage.getItem("lastName") as string | undefined,
     jobDescription: localStorage.getItem("jobDescription") as string | undefined,
-    imageSrc: localStorage.getItem("imageSrc") === "Empty" ? UserPic as string | undefined : localStorage.getItem("imageSrc") as string | undefined,
+    imageSrc: UserPic,
   };
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(auth.isAuthenticated());
@@ -93,9 +118,12 @@ function Layout(props: LayoutProps): JSX.Element {
         </div>
       </div>
       <aside className="SideBar">
-        <SideBar />
-      </aside>
-      <div className="layout-component"><props.component /></div>
+      <SideBar handleLogoutClick={() => setShowPopup(true)} />      </aside>
+      <div className="layout-component">
+        <props.component />
+      </div>
+      {/* Render the LogoutPortal */}
+      {LogoutPortal}
     </div>
   );
 }

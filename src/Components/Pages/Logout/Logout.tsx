@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 
 
@@ -10,7 +11,9 @@ interface LogoutPopupProps {
   onCancel: () => void;
 }
 
+
 function Logout({ message, onConfirm, onCancel }: LogoutPopupProps) {
+
     const navigate = useNavigate();
 
     const handleConfirm = () => {
@@ -18,27 +21,30 @@ function Logout({ message, onConfirm, onCancel }: LogoutPopupProps) {
         navigate('/login'); // Redirect to the new page
     };
 
-  const overlayStyle: React.CSSProperties = {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 9999,
-  };
-
-  const containerStyle: React.CSSProperties = {
-    backgroundColor: 'white',
-    borderRadius: 8,
-    padding: '16px 32px',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-  };
+    const overlayStyle: React.CSSProperties = {
+      position: 'fixed', // Use fixed position to cover the whole viewport
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      backgroundColor: 'rgba(0, 0, 0, 0.7)',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 9999, // Set a higher z-index to ensure the popup appears in front of other elements
+    };
+    
+    const containerStyle: React.CSSProperties = {
+      backgroundColor: 'white',
+      borderRadius: 8,
+      padding: '16px 32px',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center', // Center the content inside the container
+    };
+    
+    
+    
 
   const messageStyle: React.CSSProperties = {
     marginBottom: 16,

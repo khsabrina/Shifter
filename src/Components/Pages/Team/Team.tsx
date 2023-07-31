@@ -1,6 +1,6 @@
 import Layout from "../../LayoutArea/Layout/Layout";
 import UserPic from "./UserCircle/NoPhotoUser.png"
-import {TeamInfo, getUser, CreateTeam, getTeam, getRole, getAllUserTeam, CreateRole, getAllRoles, CreateUser,DeleteUser, EditUser} from "../../../actions/apiActions"
+import {TeamInfo, getUser, CreateTeam, getTeam, getRole, getAllUserTeam, CreateRole, getAllRoles, CreateUser,DeleteUser, EditUser, getAllCompanyTeam} from "../../../actions/apiActions"
 import "./Team.css"
 import React, { ChangeEvent, ReactNode, useEffect, useRef, useState } from 'react';
 import {Typography,Autocomplete,MenuItem,Checkbox,Box,Table,TableBody,TableCell,TableContainer,TableHead,TableRow,Paper,Switch, FormControlLabel
@@ -101,7 +101,7 @@ let Team = () => {
   const [AddNewTeamName, SetAddNewTeamName] = useState("");
   const [AddNewJobDescriptionName, SetAddNewJobDescriptionName] = useState("");
 
-  const [NewTeamSelectedEmployees, SetNewTeamSelectedEmployees] = useState<string[]>([]);
+  const [NewTeamSelectedEmployees, SetNewTeamSelectedEmployees] = useState<string>("");
 
   const [firstNameChange, setFirstNameChange] = useState('');
   const [lastNameChange, setLastNameChange] = useState('');
@@ -131,11 +131,35 @@ let Team = () => {
   
     async function fetchData() {
       try {
-        const [result, teamListResult, roleListResult] = await Promise.all([
-          TeamInfo(),
-          getAllUserTeam(),
-          getAllRoles(),
-        ]);
+        let result, teamListResult, roleListResult;
+        console.log("hey");
+        console.log(localStorage.getItem("teamId"));
+        if (localStorage.getItem("teamId") != "null") {
+          console.log("hey1");
+
+          [result, teamListResult, roleListResult] = await Promise.all([
+            TeamInfo([localStorage.getItem("teamId")]),
+            getAllUserTeam(),
+            getAllRoles(),
+          ]);
+
+
+        } else {
+          console.log("hey2");
+          //comany manager
+          [teamListResult, roleListResult] = await Promise.all([
+            getAllCompanyTeam(),
+            getAllRoles(),
+          ]);
+
+          const teamIds = await Promise.all(await teamListResult.map((item) => item.id));
+          result = await Promise.all(await TeamInfo(teamIds));
+
+        }
+        
+
+        // let teamIds = await Promise.all(teamListResult.map((item) => item.id));
+        // result = await Promise.all(TeamInfo(teamIds));
         const itemsTeam = await Promise.all(
           teamListResult.map(async (item) => {
             return {
@@ -285,15 +309,14 @@ let Team = () => {
 
   const handleEmployeeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { value, checked } = event.target;
+    console.log(value)
+    console.log(checked)
     if (checked) {
-      SetNewTeamSelectedEmployees((prevSelectedEmployees) => [
-        ...prevSelectedEmployees,
-        value
-      ]);
+      SetNewTeamSelectedEmployees(value);
     } else {
-      SetNewTeamSelectedEmployees((prevSelectedEmployees) =>
-        prevSelectedEmployees.filter((employee) => employee !== value)
-      );
+      // SetNewTeamSelectedEmployees((prevSelectedEmployees) =>
+      //   prevSelectedEmployees.filter((employee) => employee !== value)
+      // );
     }
   };
   const handleNewJobDescriptionOpen = () => {
@@ -347,7 +370,7 @@ const onUserDelete = async (id: string) => {
   };
   const handleCreateNewTeamClose = async () => {
     let data  = {};
-    data = await onTeamCreate({"company_id": localStorage.getItem("companyId"), "name": AddNewTeamName, "manager": localStorage.getItem("userId")});
+    data = await onTeamCreate({"company_id": localStorage.getItem("companyId"), "name": AddNewTeamName, "manager": NewTeamSelectedEmployees});
     // console.log(data['id'])
     // const new_team = {id: data['id'],name: data['name'],manager: data['manager'] ,company_id: data['company_id']};
     // teamList[data['id']] = new_team
@@ -534,7 +557,7 @@ const onUserDelete = async (id: string) => {
   const EditUserDialog = async () => {
     if (isManager){
       await onUserEdit(selectedRowId,{"company_id": localStorage.getItem("companyId"), "username": emailChange, "first_name": firstNameChange, 
-      "last_name": lastNameChange, "team_id":teamChange,"role_id":jobDescriptionChange,"color": selectedColor});
+      "last_name": lastNameChange,"role_id":jobDescriptionChange,"color": selectedColor});
     }
     else {
       await onUserEdit(selectedRowId,{"company_id": localStorage.getItem("companyId"), "username": emailChange, "first_name": firstNameChange, 
@@ -769,18 +792,18 @@ const onUserDelete = async (id: string) => {
             <>
               <p>Choose employees to add to the team:</p>
               {Array.from(
-                new Set(userList.map((row) => `${row.firstName} ${row.lastName}`))
+                new Set(userList.map((row) => [row.id, `${row.firstName} ${row.lastName}`]))
               ).map((team) => (
                 <FormControlLabel
                   control={
                     <Checkbox
-                      value={team}
-                      checked={NewTeamSelectedEmployees.includes(team)}
+                      value={team[0]}
+                      checked={NewTeamSelectedEmployees === team[1]}
                       onChange={handleEmployeeChange}
                     />
                   }
-                  label={team}
-                  key={team}
+                  label={team[1]}
+                  key={team[0]}
                 />
               ))}
                 </>
@@ -818,7 +841,7 @@ const onUserDelete = async (id: string) => {
                   control={
                     <Checkbox
                       value={team}
-                      checked={NewTeamSelectedEmployees.includes(team)}
+                      checked={NewTeamSelectedEmployees === (team)}
                       onChange={handleEmployeeChange}
                     />
                   }
@@ -921,7 +944,7 @@ const onUserDelete = async (id: string) => {
               }}
             />
           </div>}
-      <FormControl fullWidth margin="dense">
+      {!isManager && <FormControl fullWidth margin="dense">
         <InputLabel id="team-select-label">Team</InputLabel>
         <Select
           labelId="team-select-label"
@@ -937,7 +960,7 @@ const onUserDelete = async (id: string) => {
             </MenuItem>
           ))}
         </Select>
-      </FormControl>
+      </FormControl>}
       <FormControl fullWidth margin="dense">
         <InputLabel id="jobdescription-select-label">Job Description</InputLabel>
         <Select

@@ -8,14 +8,14 @@ import Team from "./Components/Pages/Team/Team"
 import Settings from "./Components/Pages/Settings/Settings"
 import "./index.css";
 import { useEffect } from "react";
-// import auth from "./Components/auth/auth";
+import auth from "./Components/auth/auth";
 import Prioritizer from "./Components/Pages/Prioritizer/Prioritizer";
 import Priouser from "./Components/Pages/Priouser/Priouser";
 
 export default function App() {
   useEffect(() => {
     function handleBeforeUnload() {
-      // auth.logout();
+      auth.logout();
     }
 
     window.addEventListener('beforeunload', handleBeforeUnload);
