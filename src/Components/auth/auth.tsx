@@ -10,6 +10,7 @@ class Auth {
   setUser(data: any) {
     console.log(data);
     localStorage.setItem("firstName", data.first_name);
+    localStorage.setItem("username", data.username);
     localStorage.setItem("lastName", data.last_name);
     localStorage.setItem("userId", data.id);
     localStorage.setItem("isAdmin", data.is_admin);

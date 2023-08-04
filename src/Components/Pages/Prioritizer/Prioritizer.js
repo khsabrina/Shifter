@@ -759,7 +759,7 @@ class Prioritizer extends Component {
 
                         {showModal && (
                             <div className="popup-overlay">
-                                <div className="popup">
+                                <div className="popup1">
                                     <h3>Edit shift</h3>
                                     <div>
                                         <input value={selectedEvent.title} onChange={this.handleTitleChange} />
@@ -834,7 +834,7 @@ class Prioritizer extends Component {
                         </div>
                         {this.state.isPopupOpen && (
                             <div className="popup-overlay">
-                                <div className="popup">
+                                <div className="popup1">
                                     <h3>Edit Template</h3>
                                     <div>
                                         <label>
