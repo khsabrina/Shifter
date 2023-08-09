@@ -147,16 +147,13 @@ const getAllRoles = async () => {
   }
 };
 const TeamInfo = async (admin) => {
-  console.log("cheack")
-  console.log(admin)
   let team_ids: string[] = []
 
   let local_team_ids = localStorage.getItem("teamIds");
   if (local_team_ids != "null") {
     team_ids = (local_team_ids as string).split(',');
   }
-  console.log(team_ids)
-  const response = await fetch(`${URL}${localStorage.getItem("companyId")}/teamemp/?`, methodGetWithData({ "team_ids": team_ids} ));
+  const response = await fetch(`${URL}${localStorage.getItem("companyId")}/teamemp/?`, methodGetWithData({ "team_ids": team_ids }));
   const data = await response.json();
   if (response.status === 200) {
     return data
@@ -165,35 +162,29 @@ const TeamInfo = async (admin) => {
 };
 
 const CreateTeam = async (team: {}) => {
-  console.log(team)
   const response = await fetch(`${URL}${localStorage.getItem("companyId")}/team/`, methodPost(team));
   const data = await response.json();
   if (response.status === 201) {
-    console.log(data)
     return data
     // auth.setUser(data);
   }
 };
 
 const CreateUser = async (user: {}) => {
-  // console.log(team)
   const response = await fetch(`${URL}${localStorage.getItem("companyId")}/employee/`, methodPost(user));
   const data = await response.json();
   if (response.status === 201) {
-    console.log(data)
     return data;
     // auth.setUser(data);
   }
 };
 
 const EditUser = async (selectedId: string, user: {}) => {
-  // console.log(team)
   const response = await fetch(`${URL}${localStorage.getItem("companyId")}/employee/${selectedId}/`, methodPatch(user));
   const data = await response.json();
   if (response.status === 201) {
-    console.log(data)
     // auth.setUser(data);
-  
+
   }
   return data
 };
@@ -201,17 +192,14 @@ const DeleteUser = async (selectedId: string) => {
   const response = await fetch(`${URL}${localStorage.getItem("companyId")}/employee/${selectedId}`, methodDelete());
   const data = await response.json();
   if (response.status === 201) {
-    console.log(data)
     // auth.setUser(data);
   }
 };
 
 const CreateRole = async (role: {}) => {
-  console.log(role)
   const response = await fetch(`${URL}0/role/`, methodPost(role));
   const data = await response.json();
   if (response.status === 201) {
-    console.log(data)
     return data
     // auth.setUser(data);
   }

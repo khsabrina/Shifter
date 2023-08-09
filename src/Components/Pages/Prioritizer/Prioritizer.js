@@ -376,7 +376,6 @@ class Prioritizer extends Component {
     }
 
     activateA = () => {
-        console.log(this.state.ShiftID);
         let data = { "ShiftID": this.state.ShiftID, "Strategy Inputs": {} }
         activate(data);
     }
