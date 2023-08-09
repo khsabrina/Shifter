@@ -29,8 +29,8 @@ interface Row {
   email: string;
   teamID : string;
   jobDescriptionID : string;
+  isAdmin : string;
 
-  
 }
 
 interface NewUser {
@@ -133,12 +133,12 @@ let Team = () => {
       try {
         let result, teamListResult, roleListResult;
         console.log("hey");
-        console.log(localStorage.getItem("teamId"));
-        if (localStorage.getItem("teamId") != "null") {
+        console.log(localStorage.getItem("teamIds"));
+        if (localStorage.getItem("teamIds") != "null") {
           console.log("hey1");
 
           [result, teamListResult, roleListResult] = await Promise.all([
-            TeamInfo([localStorage.getItem("teamId")]),
+            TeamInfo(localStorage.getItem("teamIds")),
             getAllUserTeam(),
             getAllRoles(),
           ]);
@@ -153,7 +153,7 @@ let Team = () => {
           ]);
 
           const teamIds = await Promise.all(await teamListResult.map((item) => item.id));
-          result = await Promise.all(await TeamInfo(teamIds));
+          result = await Promise.all(await TeamInfo([]));
 
         }
         
@@ -186,6 +186,10 @@ let Team = () => {
           setRoleList(itemsRole);
           
           // Use Promise.all to ensure teamList and RoleList are populated
+          console.log("sab1");
+          console.log(result);
+          console.log("sab2");
+
           const items = await Promise.all(
             result.map(async (item) => {
               // Access team name and role name from the populated teamList and RoleList arrays
@@ -202,6 +206,7 @@ let Team = () => {
                 jobDescription: roleName,
                 imageSrc: UserPic,
                 email: item.username,
+                isAdmin : item.is_admin.toString(),
               };
             })
           );
@@ -311,6 +316,8 @@ let Team = () => {
     const { value, checked } = event.target;
     console.log(value)
     console.log(checked)
+    SetNewTeamSelectedEmployees(value);
+
     if (checked) {
       SetNewTeamSelectedEmployees(value);
     } else {
@@ -370,7 +377,11 @@ const onUserDelete = async (id: string) => {
   };
   const handleCreateNewTeamClose = async () => {
     let data  = {};
+    let data2  = {};
+
     data = await onTeamCreate({"company_id": localStorage.getItem("companyId"), "name": AddNewTeamName, "manager": NewTeamSelectedEmployees});
+
+    // data2 = await EditUser(localStorage.getItem("userId") as string,{"team_id": data['id']});
     // console.log(data['id'])
     // const new_team = {id: data['id'],name: data['name'],manager: data['manager'] ,company_id: data['company_id']};
     // teamList[data['id']] = new_team
@@ -378,6 +389,8 @@ const onUserDelete = async (id: string) => {
       ...prevTeams,
       {id: data['id'],name: data['name'],manager: data['manager'] ,company_id: data['company_id']},
     ]);
+
+
     handleNewTeamClose();
   };
 
@@ -427,6 +440,7 @@ const onUserDelete = async (id: string) => {
     setFirstNameChange(row.firstName);
     setLastNameChange(row.lastName);
     setTeamID(row.teamID);
+    setIsManager(JSON.parse(row.isAdmin));
     console.log(row.teamID);
     console.log(row.jobDescriptionID);
     setJobDescriptionID(row.jobDescriptionID);
@@ -527,9 +541,16 @@ const onUserDelete = async (id: string) => {
   //   }
   // };
   const handleSaveRow = () =>{
-    if (firstNameChange === '' || lastNameChange === '' || emailChange === '' || teamChange === '' || jobDescriptionChange === '') {
-      alert('Please fill in all required fields.');
-      return;
+    if (isManager){
+      if (firstNameChange === '' || lastNameChange === '' || emailChange === ''  || jobDescriptionChange === '') {
+        alert('Please fill in all required fields.');
+        return;
+      }
+    }else{
+      if (firstNameChange === '' || lastNameChange === '' || emailChange === '' || teamChange === '' || jobDescriptionChange === '') {
+        alert('Please fill in all required fields.');
+        return;
+      }
     }
     if (dialogMode === 'add') {
       if (passwordChange === passwordChange2){
@@ -608,19 +629,23 @@ const onUserDelete = async (id: string) => {
         let data = {}
         if (isManager){
           data = await onUserCreate({"company_id": localStorage.getItem("companyId"), "username": emailChange, "first_name": firstNameChange, 
-          "last_name": lastNameChange, "password" : passwordChange, "team_id":teamChange,"role_id":jobDescriptionChange, "color": selectedColor});
+          "last_name": lastNameChange, "password" : passwordChange, "role_id":jobDescriptionChange,"is_admin" : "true", "color": selectedColor});
         }
         else {
           data = await onUserCreate({"company_id": localStorage.getItem("companyId"), "username": emailChange, "first_name": firstNameChange, 
           "last_name": lastNameChange, "password" : passwordChange, "team_id":teamChange,"role_id":jobDescriptionChange ,"is_admin" : "false", "color": selectedColor});
         }
+        console.log("sab3")
+        console.log(data)
+        console.log("sab3")
+
         const teamName = teamList.find((team) => team.id === teamChange)?.name || "Unknown Team";
         const roleName = RoleList.find((role) => role.id === jobDescriptionChange)?.name || "Unknown Role";
-        console.log("here")
+        console.log("sab")
         console.log(data['id']);
         setRows((prevRows) => [
           ...prevRows,
-          {id: data['id'],imageSrc,firstName: firstNameChange ,lastName: lastNameChange,jobDescription: roleName,jobDescriptionID: jobDescriptionChange,team: teamName,teamID: teamChange,email: emailChange},
+          {id: data['id'],imageSrc,firstName: firstNameChange ,lastName: lastNameChange,jobDescription: roleName,jobDescriptionID: jobDescriptionChange,team: teamName,teamID: teamChange,email: emailChange, isAdmin: isManager.toString()},
         ]);
       
         setDialogOpen(false); 
@@ -711,7 +736,7 @@ const onUserDelete = async (id: string) => {
               InputLabelProps={{ style: { fontSize: 12 } }}      
               inputProps={ {  style: { fontSize: 12 } ,
                 ...params.inputProps,
-                autoComplete: 'new-password', // disable autocomplete and autofill
+                // autoComplete: 'new-password', // disable autocomplete and autofill
               }}
 
             />
@@ -730,8 +755,8 @@ const onUserDelete = async (id: string) => {
           +
         </Button> */}
         <Menu anchorEl={anchorAdd} open={Boolean(anchorAdd)} onClose={handleMenuAddClose}>
-          <MenuItem onClick={() => handleNewTeamOpen()}>New Team</MenuItem>
-          <MenuItem onClick={() => handleNewJobDescriptionOpen()}>New Job Description</MenuItem>
+          {(localStorage.getItem("teamIds") == "null") && (<MenuItem onClick={() => handleNewTeamOpen()}>New Team</MenuItem>)}
+          {(localStorage.getItem("teamIds") == "null") && (<MenuItem onClick={() => handleNewJobDescriptionOpen()}>New Job Description</MenuItem>)}
           <MenuItem onClick={() => handleAddNewEmployee()}>New Employee</MenuItem>
         </Menu>
       </Box>
@@ -792,19 +817,21 @@ const onUserDelete = async (id: string) => {
             <>
               <p>Choose employees to add to the team:</p>
               {Array.from(
-                new Set(userList.map((row) => [row.id, `${row.firstName} ${row.lastName}`]))
+                new Set(userList.map((row) => [row.id, `${row.firstName} ${row.lastName}`, row.isAdmin]))
               ).map((team) => (
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      value={team[0]}
-                      checked={NewTeamSelectedEmployees === team[1]}
-                      onChange={handleEmployeeChange}
-                    />
-                  }
-                  label={team[1]}
-                  key={team[0]}
-                />
+                    (team[2] != "false") && (team[0] != localStorage.getItem("userId")) && (
+                  <FormControlLabel
+                      control={
+                          <Checkbox
+                              value={team[0]}
+                              checked={NewTeamSelectedEmployees.includes(team[0])}
+                              onChange={handleEmployeeChange}
+                          />
+                      }
+                      label={team[1]}
+                      key={team[0]}
+                  />
+              )
               ))}
                 </>
               ) : (<p>No employees available.</p>)}
@@ -944,13 +971,13 @@ const onUserDelete = async (id: string) => {
               }}
             />
           </div>}
-      {!isManager && <FormControl fullWidth margin="dense">
+      {!isManager && (<FormControl fullWidth margin="dense">
         <InputLabel id="team-select-label">Team</InputLabel>
         <Select
           labelId="team-select-label"
           id="team-select"
           value={teamChange}
-          defaultValue={teamChange === '' ? teamChange :teamList[teamChange]}
+          defaultValue={teamChange == '' ? teamChange :teamList[teamChange]}
           onChange={handleTeamChange}
           label="Team"
         >
@@ -960,8 +987,8 @@ const onUserDelete = async (id: string) => {
             </MenuItem>
           ))}
         </Select>
-      </FormControl>}
-      <FormControl fullWidth margin="dense">
+      </FormControl>)}
+      {(<FormControl fullWidth margin="dense">
         <InputLabel id="jobdescription-select-label">Job Description</InputLabel>
         <Select
           labelId="jobdescription-select-label"
@@ -977,7 +1004,7 @@ const onUserDelete = async (id: string) => {
           </MenuItem>
         ))}
         </Select>
-      </FormControl>
+      </FormControl>)}
         <div className="custom-row">
           <div className="switch-container" onClick={handleSwitchChange}>
             <div className={`switch ${isManager ? 'manager' : 'employee'}`}>

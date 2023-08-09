@@ -3,7 +3,7 @@ import Layout from "../../LayoutArea/Layout/Layout";
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop'
 import { Calendar, momentLocalizer } from 'react-big-calendar'
 import "react-big-calendar/lib/css/react-big-calendar.css";
-import { GetTeamShifts, GetTeamTemplate, GetTeamList, CreateTeamShifts, GetRoles, updateTemplate, deleteTemplate, CreateTemplate } from "../../../actions/apiActions";
+import { GetTeamShifts, GetTeamTemplate, GetTeamList, CreateTeamShifts, GetRoles, updateTemplate, deleteTemplate, CreateTemplate, activate } from "../../../actions/apiActions";
 import moment from "moment";
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
@@ -105,7 +105,7 @@ class Prioritizer extends Component {
                     }
                 }
                 this.setState({ events: events });
-                this.setState({ shiftId: shiftId });
+                this.setState({ ShiftID: shiftId });
             }
         }
     }
@@ -337,7 +337,7 @@ class Prioritizer extends Component {
 
     async getShifts(selectedOption, selectedDay) {
         this.setState({ events: [] });
-        this.setState({ shiftId: null });
+        this.setState({ ShiftID: null });
         const userEvents = await GetTeamShifts(selectedOption.value, {
             "RangedDates": {
                 "StartDate": get_day_format(getSunday(selectedDay)), "EndDate": get_day_format(getSaturday(selectedDay))
@@ -371,8 +371,14 @@ class Prioritizer extends Component {
                 }
             }
             this.setState({ events: events });
-            this.setState({ shiftId: shiftId });
+            this.setState({ ShiftID: shiftId });
         }
+    }
+
+    activateA = () => {
+        console.log(this.state.ShiftID);
+        let data = { "ShiftID": this.state.ShiftID, "Strategy Inputs": {} }
+        activate(data);
     }
 
     handleCreateShifts = () => {
@@ -384,7 +390,8 @@ class Prioritizer extends Component {
             "TeamID": this.state.selectedTitles.value,
             "StartDate": get_day_format(getSunday(selectedDay)),
             "EndDate": get_day_format(getSaturday(selectedDay)),
-            "ShiftID": null
+            "ShiftID": null,
+            "DefaultAnswer": true
         };
         const DailyShifts = [];
         let inside_data = { "Date": null };
@@ -909,7 +916,10 @@ class Prioritizer extends Component {
                         )}
                     </div>
                 </div>
-                <button className="thebutton" onClick={this.handleCreateShifts}>Save Changes</button>
+                <div className="button-container">
+                    <button className="thebutton" onClick={this.handleCreateShifts}>Save Changes</button>
+                    <button className="thebutton" onClick={this.activateA}>Activate</button>
+                </div>
             </div>
         );
     }
@@ -932,8 +942,14 @@ function getWeekStartDate(date) {
 }
 
 function MainPrioritizer() {
-    // TODO: if the user is not admin - new screen
     return <Layout PageName="Prioritizer" component={Prioritizer} />;
+    // TODO: if the user is not admin - new screen
+    // const isAdmin = localStorage.getItem('isAdmin') === 'true';
+    // if (isAdmin) {
+    // }
+    // else {
+    //     return Priouser;
+    // }
 }
 
 export default MainPrioritizer;

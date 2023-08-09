@@ -22,7 +22,7 @@ interface LayoutProps {
 }
 
 function Layout(props: LayoutProps): JSX.Element {
-    const [showPopup, setShowPopup] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
   const LogoutPortal = showPopup ? (
     createPortal(
       <Logout
@@ -36,6 +36,8 @@ function Layout(props: LayoutProps): JSX.Element {
   function handleConfirm() {
     // handle the confirmation action
     setShowPopup(false);
+    auth.logout();
+    navigate('/login')
     // Perform the actual logout process here
     // For example, clear session data and redirect to the login page
   }
@@ -118,7 +120,7 @@ function Layout(props: LayoutProps): JSX.Element {
         </div>
       </div>
       <aside className="SideBar">
-      <SideBar handleLogoutClick={() => setShowPopup(true)} />      </aside>
+        <SideBar handleLogoutClick={() => setShowPopup(true)} />      </aside>
       <div className="layout-component">
         <props.component />
       </div>

@@ -69,11 +69,11 @@ interface LoginForm {
   password: string;
 }
 
-interface Team {
-  company_id: string | null;
-  name: string;
-  manager: string | null;
-}
+// interface Team {
+//   company_id: string | null;
+//   name: string;
+//   manager: string | null;
+// }
 
 
 const userLogin = async (user: LoginForm) => {
@@ -103,7 +103,12 @@ const getTeam = async (TeamId: String) => {
 
 
 const getAllUserTeam = async () => {
-  const response = await fetch(`${URL}${localStorage.getItem("companyId")}/team/?`, methodGetWithData({ "team_ids": [localStorage.getItem("teamId")] }));
+  let team_ids: string[] = []
+  let local_team_ids = localStorage.getItem("teamIds");
+  if (local_team_ids) {
+    team_ids = local_team_ids.split(',');
+  }
+  const response = await fetch(`${URL}${localStorage.getItem("companyId")}/team/?`, methodGetWithData({ "team_ids": team_ids }));
   const data = await response.json();
   if (response.status === 200) {
     return data
@@ -142,7 +147,16 @@ const getAllRoles = async () => {
   }
 };
 const TeamInfo = async (admin) => {
-  const response = await fetch(`${URL}${localStorage.getItem("companyId")}/teamemp/?`, methodGetWithData({ "team_ids": admin }));
+  console.log("cheack")
+  console.log(admin)
+  let team_ids: string[] = []
+
+  let local_team_ids = localStorage.getItem("teamIds");
+  if (local_team_ids != "null") {
+    team_ids = (local_team_ids as string).split(',');
+  }
+  console.log(team_ids)
+  const response = await fetch(`${URL}${localStorage.getItem("companyId")}/teamemp/?`, methodGetWithData({ "team_ids": team_ids} ));
   const data = await response.json();
   if (response.status === 200) {
     return data
@@ -179,7 +193,9 @@ const EditUser = async (selectedId: string, user: {}) => {
   if (response.status === 201) {
     console.log(data)
     // auth.setUser(data);
+  
   }
+  return data
 };
 const DeleteUser = async (selectedId: string) => {
   const response = await fetch(`${URL}${localStorage.getItem("companyId")}/employee/${selectedId}`, methodDelete());
@@ -230,7 +246,7 @@ const GetTeamAssignments = async (data: {}, team_id: String) => {
   const response = await fetch(`${myUrl}`, methodGetWithData(data));
   if (response.status === 201) {
     const data = await response.json();
-    if (data != "No team_id for ShiftsGet :(") {
+    if (data !== "No team_id for ShiftsGet :(") {
       return data
     }
   }
@@ -326,9 +342,29 @@ const CreateTemplate = async (template: {}) => {
   return {};
 };
 
-const getWeekklyPref = async (employee: String) => {
-  let myUrl = `${URL}${localStorage.getItem("companyId")}/weeklypref/?${localStorage.getItem("teamId")}&employee_id=${localStorage.getItem("username")}`;
+const getWeekklyPref = async () => {
+  let myUrl = `${URL}${localStorage.getItem("companyId")}/weeklypref/?team_id=${localStorage.getItem("teamId")}&employee_id=${localStorage.getItem("username")}`;
   const response = await fetch(`${myUrl}`, methodGetWithData({}));
+  if (response.status === 201) {
+    const data = await response.json();
+    return data;
+  }
+  return {};
+}
+
+const updateWeekklyPref = async (data: {}) => {
+  let myUrl = `${URL}${localStorage.getItem("companyId")}/weeklypref/?team_id=${localStorage.getItem("teamId")}&employee_id=${localStorage.getItem("username")}`;
+  const response = await fetch(`${myUrl}`, methodPatch(data));
+  if (response.status === 201) {
+    const data = await response.json();
+    return data;
+  }
+  return {};
+}
+
+const activate = async (data: {}) => {
+  let myUrl = `${URL}${localStorage.getItem("companyId")}/algorithm/`;
+  const response = await fetch(`${myUrl}`, methodGetWithData(data));
   if (response.status === 201) {
     const data = await response.json();
     return data;
@@ -362,6 +398,8 @@ export {
   getAllCompanyTeam,
   updateAssignments,
   getWeekklyPref,
+  updateWeekklyPref,
+  activate
   // userSignup,
   // fetchOrganizations,
   // fetchUsers,

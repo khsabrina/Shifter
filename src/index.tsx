@@ -13,9 +13,11 @@ import Prioritizer from "./Components/Pages/Prioritizer/Prioritizer";
 import Priouser from "./Components/Pages/Priouser/Priouser";
 
 export default function App() {
+  const isAdmin = localStorage.getItem("isAdmin") === "true"; // Correctly read the isAdmin value
+
   useEffect(() => {
     function handleBeforeUnload() {
-      auth.logout();
+      // auth.logout();
     }
 
     window.addEventListener('beforeunload', handleBeforeUnload);
@@ -30,7 +32,23 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         {/* <Route path="/home" element={<Home />} /> */}
         <Route path="/calendar" element={<Calendar />} />
-        <Route path="/prioritizer" element={<Prioritizer />} />
+
+      {/* Barak */}
+      {/* /* */}
+      {/* /* */}
+      {/* /* */}
+      {/* /* */}
+      {/* /* */}
+      {/* /* */}
+        תעשה חיפוש אלה שמה היא מבדילה מה להציג לפי מנהלPrioritizerWrapper  
+      <Route path="/prioritizer" element={<PrioritizerWrapper />} />
+      {/* /* */}
+      {/* /* */}
+      {/* /* */}
+      {/* /* */}
+      {/* /* */}
+      {/* /* */}
+      {/* /* */}
         <Route path="/priouser" element={<Priouser />} />
         <Route path="/team" element={<Team />} />
         <Route path="/settings" element={<Settings />} />
@@ -39,7 +57,11 @@ export default function App() {
     </BrowserRouter>
   );
 }
+function PrioritizerWrapper() {
+  const isAdmin = localStorage.getItem("isAdmin") === "true";
 
+  return isAdmin ? <Prioritizer /> : <Calendar />;
+}
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
