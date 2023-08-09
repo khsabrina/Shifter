@@ -54,12 +54,7 @@ function SideBar({ handleLogoutClick }: SideBarProps): JSX.Element {
           <Logo />
         </div>
       </div>
-      <div style={{ display: 'flex', marginLeft: '7px' }}>
-        <Link to="/home" style={buttonStyle}>
-          <HouseIcon style={iconStyle} />
-          <span style={textStyle}>Home</span>
-        </Link>
-      </div>
+
       <div style={{ display: 'flex', marginLeft: '7px' }}>
         <Link to="/calendar" style={buttonStyle}>
           <CalendarIcon style={iconStyle} />
@@ -73,11 +68,16 @@ function SideBar({ handleLogoutClick }: SideBarProps): JSX.Element {
         </Link>
       </div>
       <div style={{ display: 'flex', marginLeft: '7px' }}>
-        <Link to="/team" style={buttonStyle}>
-          <TeamIcon style={iconStyle} />
-          <span style={textStyle}>Team</span>
-        </Link>
+        {(localStorage.getItem("isAdmin") !== null && JSON.parse(localStorage.getItem("isAdmin") as string) as boolean) && (
+            <Link to="/team" style={buttonStyle}>
+                <TeamIcon style={iconStyle} />
+                <span style={textStyle}>Team</span>
+            </Link>
+        )}
       </div>
+
+
+
       <div style={{ display: 'flex', marginLeft: '7px' }}>
         <Link to="/settings" style={buttonStyle}>
           <SettingsIcon style={iconStyle} />

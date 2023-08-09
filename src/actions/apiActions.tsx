@@ -103,7 +103,12 @@ const getTeam = async (TeamId: String) => {
 
 
 const getAllUserTeam = async () => {
-  const response = await fetch(`${URL}${localStorage.getItem("companyId")}/team/?`, methodGetWithData({ "team_ids": [localStorage.getItem("teamId")] }));
+  let team_ids: string[] = []
+  let local_team_ids = localStorage.getItem("teamIds");
+  if (local_team_ids) {
+    team_ids = local_team_ids.split(',');
+  }
+  const response = await fetch(`${URL}${localStorage.getItem("companyId")}/team/?`, methodGetWithData({ "team_ids": team_ids }));
   const data = await response.json();
   if (response.status === 200) {
     return data
@@ -142,7 +147,16 @@ const getAllRoles = async () => {
   }
 };
 const TeamInfo = async (admin) => {
-  const response = await fetch(`${URL}${localStorage.getItem("companyId")}/teamemp/?`, methodGetWithData({ "team_ids": admin }));
+  console.log("cheack")
+  console.log(admin)
+  let team_ids: string[] = []
+
+  let local_team_ids = localStorage.getItem("teamIds");
+  if (local_team_ids != "null") {
+    team_ids = (local_team_ids as string).split(',');
+  }
+  console.log(team_ids)
+  const response = await fetch(`${URL}${localStorage.getItem("companyId")}/teamemp/?`, methodGetWithData({ "team_ids": team_ids} ));
   const data = await response.json();
   if (response.status === 200) {
     return data
@@ -179,7 +193,9 @@ const EditUser = async (selectedId: string, user: {}) => {
   if (response.status === 201) {
     console.log(data)
     // auth.setUser(data);
+  
   }
+  return data
 };
 const DeleteUser = async (selectedId: string) => {
   const response = await fetch(`${URL}${localStorage.getItem("companyId")}/employee/${selectedId}`, methodDelete());

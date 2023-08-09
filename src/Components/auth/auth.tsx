@@ -18,8 +18,9 @@ class Auth {
     // localStorage.setItem("imageSrc", data.imageSrc);
     localStorage.setItem("companyId", data.company_id);
     localStorage.setItem("teamId", data.team_id);
-    if (data.team_ids == null) {
-      localStorage.setItem("teamIds", data.team_id);
+    if (!Array.isArray(data.team_ids) || data.team_ids.length === 0) {
+      
+      localStorage.setItem("teamIds", "null");
     } else {
       localStorage.setItem("teamIds", data.team_ids);
     }
