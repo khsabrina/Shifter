@@ -81,9 +81,9 @@ const userLogin = async (user: LoginForm) => {
   const data = await response.json();
   if (response.status === 200) {
     auth.login(data);
-    return "work"
+    return true;
   }
-  return "incorrect username or password"
+  return false;
 };
 
 const getUser = async () => {

@@ -33,25 +33,25 @@ export default function App() {
         {/* <Route path="/home" element={<Home />} /> */}
         <Route path="/calendar" element={<Calendar />} />
 
-      {/* Barak */}
-      {/* /* */}
-      {/* /* */}
-      {/* /* */}
-      {/* /* */}
-      {/* /* */}
-      {/* /* */}
-        תעשה חיפוש אלה שמה היא מבדילה מה להציג לפי מנהלPrioritizerWrapper  
-      <Route path="/prioritizer" element={<PrioritizerWrapper />} />
-      {/* /* */}
-      {/* /* */}
-      {/* /* */}
-      {/* /* */}
-      {/* /* */}
-      {/* /* */}
-      {/* /* */}
-        <Route path="/priouser" element={<Priouser />} />
+        {/* Barak */}
+        {/* /* */}
+        {/* /* */}
+        {/* /* */}
+        {/* /* */}
+        {/* /* */}
+        {/* /* */}
+        תעשה חיפוש אלה שמה היא מבדילה מה להציג לפי מנהלPrioritizerWrapper
+        <Route path="/prioritizer" element={<PrioritizerWrapper />} />
+        {/* /* */}
+        {/* /* */}
+        {/* /* */}
+        {/* /* */}
+        {/* /* */}
+        {/* /* */}
+        {/* /* */}
+        {/* <Route path="/priouser" element={<Priouser />} /> */}
         <Route path="/team" element={<Team />} />
-        <Route path="/settings" element={<Settings />} />
+        {/* <Route path="/settings" element={<Settings />} /> */}
         <Route path="/" element={<Login />} />
       </Routes>
     </BrowserRouter>
@@ -60,7 +60,7 @@ export default function App() {
 function PrioritizerWrapper() {
   const isAdmin = localStorage.getItem("isAdmin") === "true";
 
-  return isAdmin ? <Prioritizer /> : <Calendar />;
+  return isAdmin ? <Prioritizer /> : <Priouser />;
 }
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement

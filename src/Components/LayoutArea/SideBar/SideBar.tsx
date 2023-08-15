@@ -69,25 +69,25 @@ function SideBar({ handleLogoutClick }: SideBarProps): JSX.Element {
       </div>
       <div style={{ display: 'flex', marginLeft: '7px' }}>
         {(localStorage.getItem("isAdmin") !== null && JSON.parse(localStorage.getItem("isAdmin") as string) as boolean) && (
-            <Link to="/team" style={buttonStyle}>
-                <TeamIcon style={iconStyle} />
-                <span style={textStyle}>Team</span>
-            </Link>
+          <Link to="/team" style={buttonStyle}>
+            <TeamIcon style={iconStyle} />
+            <span style={textStyle}>Team</span>
+          </Link>
         )}
       </div>
 
 
 
-      <div style={{ display: 'flex', marginLeft: '7px' }}>
+      {/* <div style={{ display: 'flex', marginLeft: '7px' }}>
         <Link to="/settings" style={buttonStyle}>
           <SettingsIcon style={iconStyle} />
           <span style={textStyle}>Settings</span>
         </Link>
-      </div>
+      </div> */}
       <div style={{ display: 'flex', marginLeft: '7px' }}>
-      <Link to="#" onClick={handleLogoutClick} style={buttonStyle}>
-            <LogoutIcon style={iconStyle}/>
-            <span style={textStyle}>Logout</span>
+        <Link to="#" onClick={handleLogoutClick} style={buttonStyle}>
+          <LogoutIcon style={iconStyle} />
+          <span style={textStyle}>Logout</span>
         </Link>
       </div>
       {showPopup && (

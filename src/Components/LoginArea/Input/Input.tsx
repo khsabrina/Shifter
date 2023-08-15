@@ -18,12 +18,12 @@ function Input(): JSX.Element {
     const navigate = useNavigate();
     const onSubmit = async (data: LoginForm) => {
         const mesaage = await userLogin(data);
-        if (auth.isAuthenticated() === true) {
+        if (mesaage === true) {
             await getUser();
             navigate('/calendar');
         }
         else {
-            toast.error(mesaage, {
+            toast.error("invalid username or password", {
                 position: "top-center",
                 autoClose: 3000,
                 hideProgressBar: false,
