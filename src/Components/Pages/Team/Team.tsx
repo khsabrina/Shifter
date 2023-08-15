@@ -16,6 +16,7 @@ import auth from "../../auth/auth";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { ChromePicker } from 'react-color';
+import { toast } from "react-toastify";
 
 
 
@@ -127,6 +128,9 @@ let Team = () => {
   }, [rows]);
 
   useEffect(() => {
+  }, [userList]);
+
+  useEffect(() => {
     let isMounted = true;
 
     async function fetchData() {
@@ -184,8 +188,8 @@ let Team = () => {
           const items = await Promise.all(
             result.map(async (item) => {
               // Access team name and role name from the populated teamList and RoleList arrays
-              const teamName = itemsTeam.find((team) => team.id === item.team_id)?.name || "Unknown Team";
-              const roleName = itemsRole.find((role) => role.id === item.role_id)?.name || "Unknown Role";
+              const teamName = itemsTeam.find((team) => team.id === item.team_id)?.name || "";
+              const roleName = itemsRole.find((role) => role.id === item.role_id)?.name || "Manager";
 
               return {
                 id: item.id,
@@ -368,17 +372,40 @@ let Team = () => {
     let data2 = {};
 
     data = await onTeamCreate({ "company_id": localStorage.getItem("companyId"), "name": AddNewTeamName, "manager": NewTeamSelectedEmployees });
+    
+    if (data == null){
+      toast.error("Team faild to created", {
+        position: "top-center",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+    });
+    }else{
+      // data2 = await EditUser(localStorage.getItem("userId") as string,{"team_id": data['id']});
+      // const new_team = {id: data['id'],name: data['name'],manager: data['manager'] ,company_id: data['company_id']};
+      // teamList[data['id']] = new_team
+      toast.success("Team created successfully!", {
+        position: "top-center",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+    });
+      setTeamList((prevTeams) => [
+        ...prevTeams,
+        { id: data['id'], name: data['name'], manager: data['manager'], company_id: data['company_id'] },
+      ]);
 
-    // data2 = await EditUser(localStorage.getItem("userId") as string,{"team_id": data['id']});
-    // const new_team = {id: data['id'],name: data['name'],manager: data['manager'] ,company_id: data['company_id']};
-    // teamList[data['id']] = new_team
-    setTeamList((prevTeams) => [
-      ...prevTeams,
-      { id: data['id'], name: data['name'], manager: data['manager'], company_id: data['company_id'] },
-    ]);
 
+      handleNewTeamClose();
 
-    handleNewTeamClose();
+      
+    }
   };
 
   const handleCreateNewJobDescriptionClose = async () => {
@@ -525,7 +552,7 @@ let Team = () => {
   // };
   const handleSaveRow = () => {
     if (isManager) {
-      if (firstNameChange === '' || lastNameChange === '' || emailChange === '' || jobDescriptionChange === '') {
+      if (firstNameChange === '' || lastNameChange === '' || emailChange === '') {
         alert('Please fill in all required fields.');
         return;
       }
@@ -571,11 +598,21 @@ let Team = () => {
         "last_name": lastNameChange, "team_id": teamChange, "role_id": jobDescriptionChange, "is_admin": "false", "color": selectedColor
       });
     }
+
+  //   toast.error("invalid username or password", {
+  //     position: "top-center",
+  //     autoClose: 3000,
+  //     hideProgressBar: false,
+  //     closeOnClick: true,
+  //     pauseOnHover: true,
+  //     draggable: true,
+  //     progress: undefined,
+  // });
     const updatedRows = rows.map((row) => {
       if (row.id === selectedRowId) {
         // If the row id matches the selectedRowId, update the row with new values
-        const teamName = teamList.find((team) => team.id === teamChange)?.name || "Unknown Team";
-        const roleName = RoleList.find((role) => role.id === jobDescriptionChange)?.name || "Unknown Role";
+        const teamName = teamList.find((team) => team.id === teamChange)?.name || "";
+        const roleName = RoleList.find((role) => role.id === jobDescriptionChange)?.name || "Manager";
         return {
           ...row,
           firstName: firstNameChange,
@@ -616,7 +653,7 @@ let Team = () => {
     if (isManager) {
       data = await onUserCreate({
         "company_id": localStorage.getItem("companyId"), "username": emailChange, "first_name": firstNameChange,
-        "last_name": lastNameChange, "password": passwordChange, "role_id": jobDescriptionChange, "is_admin": "true", "color": selectedColor
+        "last_name": lastNameChange, "password": passwordChange, "is_admin": "true"
       });
     }
     else {
@@ -626,10 +663,15 @@ let Team = () => {
       });
     }
 
-    const teamName = teamList.find((team) => team.id === teamChange)?.name || "Unknown Team";
-    const roleName = RoleList.find((role) => role.id === jobDescriptionChange)?.name || "Unknown Role";
+    const teamName = teamList.find((team) => team.id === teamChange)?.name || "";
+    const roleName = RoleList.find((role) => role.id === jobDescriptionChange)?.name || "Manager";
     setRows((prevRows) => [
       ...prevRows,
+      { id: data['id'], imageSrc, firstName: firstNameChange, lastName: lastNameChange, jobDescription: roleName, jobDescriptionID: jobDescriptionChange, team: teamName, teamID: teamChange, email: emailChange, isAdmin: isManager.toString() },
+    ]);
+
+    setuserList((prevUsers) => [      
+      ...prevUsers,
       { id: data['id'], imageSrc, firstName: firstNameChange, lastName: lastNameChange, jobDescription: roleName, jobDescriptionID: jobDescriptionChange, team: teamName, teamID: teamChange, email: emailChange, isAdmin: isManager.toString() },
     ]);
 
@@ -681,7 +723,7 @@ let Team = () => {
   const makeLabel = (subjectSearch: number) => {
     if (subjectSearch === 0) { return "First Name" }
     if (subjectSearch === 1) { return "LastName" }
-    if (subjectSearch === 2) { return "Job Description" }
+    if (subjectSearch === 2) { return "Role" }
     if (subjectSearch === 3) { return "Team" }
     return "bla"
   }
@@ -747,7 +789,7 @@ let Team = () => {
         </Button> */}
             <Menu anchorEl={anchorAdd} open={Boolean(anchorAdd)} onClose={handleMenuAddClose}>
               {(localStorage.getItem("teamIds") == "null") && (<MenuItem onClick={() => handleNewTeamOpen()}>New Team</MenuItem>)}
-              {(localStorage.getItem("teamIds") == "null") && (<MenuItem onClick={() => handleNewJobDescriptionOpen()}>New Job Description</MenuItem>)}
+              {(localStorage.getItem("teamIds") == "null") && (<MenuItem onClick={() => handleNewJobDescriptionOpen()}>New Role</MenuItem>)}
               <MenuItem onClick={() => handleAddNewEmployee()}>New Employee</MenuItem>
             </Menu>
           </Box>
@@ -762,7 +804,7 @@ let Team = () => {
                   <TableCell style={{ textAlign: 'center' }}></TableCell>
                   <TableCell style={{ textAlign: 'center' }}>First Name</TableCell>
                   <TableCell style={{ textAlign: 'center' }}>Last Name</TableCell>
-                  <TableCell style={{ textAlign: 'center' }}>Job Description</TableCell>
+                  <TableCell style={{ textAlign: 'center' }}>Role</TableCell>
                   <TableCell style={{ textAlign: 'center' }}>Team</TableCell>
                   <TableCell style={{ textAlign: 'center' }}></TableCell>
                 </TableRow>
@@ -979,18 +1021,18 @@ let Team = () => {
               ))}
             </Select>
           </FormControl>)}
-          {(<FormControl fullWidth margin="dense">
-            <InputLabel id="jobdescription-select-label">Job Description</InputLabel>
+          {!isManager && (<FormControl fullWidth margin="dense">
+            <InputLabel id="jobdescription-select-label">Role</InputLabel>
             <Select
               labelId="jobdescription-select-label"
               id="jobdescription-select"
               value={jobDescriptionChange}
-              defaultValue={jobDescriptionChange === '' ? jobDescriptionChange : RoleList[jobDescriptionChange]}
+              defaultValue={jobDescriptionChange == '' ? jobDescriptionChange : RoleList[jobDescriptionChange]}
               onChange={handleJobDescriptionChange}
               label="jobdescription"
             >
               {RoleList.map((Role) => (
-                <MenuItem key={Role.id} value={Role.id}>
+                <MenuItem value={Role.id}>
                   {Role.name}
                 </MenuItem>
               ))}
@@ -1002,7 +1044,7 @@ let Team = () => {
                 <span>{isManager ? 'Manager' : 'Employee'}</span>
               </div>
             </div>
-            <button onClick={toggleColorPicker}>Pick a Color</button>
+            {!isManager && (<button onClick={toggleColorPicker}>Pick a Color</button>)}
             {showColorPicker && (
               <div className="color-picker-container">
                 <div className="color-picker-backdrop" onClick={toggleColorPicker} />

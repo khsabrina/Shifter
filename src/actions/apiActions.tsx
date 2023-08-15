@@ -158,7 +158,7 @@ const TeamInfo = async (admin) => {
   if (response.status === 200) {
     return data
   }
-  return [];
+  return null;
 };
 
 const CreateTeam = async (team: {}) => {
@@ -168,6 +168,7 @@ const CreateTeam = async (team: {}) => {
     return data
     // auth.setUser(data);
   }
+  return null
 };
 
 const CreateUser = async (user: {}) => {
