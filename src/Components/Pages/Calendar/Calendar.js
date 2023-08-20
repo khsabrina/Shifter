@@ -331,7 +331,9 @@ class MyCalendar extends Component {
     handleSelectChange = (event) => {
         const { selectedEvent } = this.state;
         const selectedValue = event.target.value;
+        const selectedColor = event.target.Color;
         selectedEvent.title = selectedValue;
+        selectedEvent.Color = selectedColor;
         selectedEvent.employee = selectedValue;
         this.setState({ selectedEvent: selectedEvent })
     };
